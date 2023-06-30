@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v3
-        with:
-          submodules: true
       # Formatting checks
       - name: "Code formatting check"
         run: ./bin/inv_wrapper.sh format-code
