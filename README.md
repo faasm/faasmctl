@@ -1,4 +1,4 @@
-# Faasm CTL
+# Faasm CTL [![Integration tests](https://github.com/faasm/faasmctl/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/faasm/faasmctl/actions/workflows/tests.yml)
 
 `faasmctl` is a command line script to deploy, manage, and interact with a
 running [Faasm](https://github.com/faasm/faasm) cluster.
@@ -21,4 +21,12 @@ short description using:
 faasmctl -l
 ```
 
-For example, TODO
+## Development
+
+To hack around, and develop `faasmctl` itself, you just need to activate the
+development virtual environment:
+
+```bash
+source ./bin/workon.sh
+inv -l
+```
