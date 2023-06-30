@@ -21,12 +21,6 @@ short description using:
 faasmctl -l
 ```
 
-## Development
+## Further Reading
 
-To hack around, and develop `faasmctl` itself, you just need to activate the
-development virtual environment:
-
-```bash
-source ./bin/workon.sh
-inv -l
-```
+For any further reading, check the [`docs`](./docs) directory.
