@@ -2,6 +2,7 @@ from invoke import Program
 from faasmctl.tasks import task_ns
 from faasmctl.util.version import get_version
 
+
 def main():
     program = Program(
         name="faasmctl",

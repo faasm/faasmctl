@@ -1,0 +1,5 @@
+black==23.3.0
+flake8==6.0.0
+
+# Finally, install self to play around
+-e .
