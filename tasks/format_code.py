@@ -1,14 +1,13 @@
 from invoke import task
 from subprocess import run
+from faasmctl.util.env import PROJ_ROOT
 
 
 @task(default=True)
 def format(ctx, check=False):
     """
-    Format Python and C++ code
+    Format Python code
     """
-    # ---- Python formatting ----
-
     files_to_check = (
         run(
             'git ls-files -- "*.py"',
@@ -30,7 +29,6 @@ def format(ctx, check=False):
 
     flake8_cmd = [
         "python3 -m flake8",
-        "{}".format("--format" if not check else ""),
         " ".join(files_to_check),
     ]
     flake8_cmd = " ".join(flake8_cmd)
