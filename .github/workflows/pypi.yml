@@ -1,6 +1,5 @@
 name: "Publish to PyPI"
 
-# TODO: only trigger on pushes to main that change the tag version?
 on:
   push:
     branches: [main]
