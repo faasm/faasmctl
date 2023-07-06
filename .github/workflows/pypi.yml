@@ -2,10 +2,8 @@ name: "Publish to PyPI"
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build-and-publish:
