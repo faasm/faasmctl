@@ -5,7 +5,7 @@ from subprocess import run
 
 VERSIONED_FILES = [
     "pyproject.toml",
-    "README",
+    "README.md",
     "VERSION",
 ]
 
