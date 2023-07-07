@@ -15,20 +15,30 @@ def invoke_and_await(url, json_msg, expected_num_messages):
     # The first invocation returns an appid to poll for the message
     response = post(url, data=json_msg, timeout=None)
     if response.status_code != 200:
-        print("POST request failed (code: {}): {}".format(response.status_code, response.text))
+        print(
+            "POST request failed (code: {}): {}".format(
+                response.status_code, response.text
+            )
+        )
 
     ber_status = Parse(response.text, BatchExecuteRequestStatus())
     ber_status.expectedNumMessages = expected_num_messages
 
     # TODO: poll
-    json_msg = prepare_planner_msg("EXECUTE_BATCH_STATUS", MessageToJson(ber_status, indent=None))
+    json_msg = prepare_planner_msg(
+        "EXECUTE_BATCH_STATUS", MessageToJson(ber_status, indent=None)
+    )
     while True:
         # Sleep at the begining, so that the app is registered
         sleep(poll_period)
 
         response = post(url, data=json_msg, timeout=None)
         if response.status_code != 200:
-            print("POST request failed (code: {}): {}".format(response.status_code, response.text))
+            print(
+                "POST request failed (code: {}): {}".format(
+                    response.status_code, response.text
+                )
+            )
             break
 
         ber_status = Parse(response.text, BatchExecuteRequestStatus())

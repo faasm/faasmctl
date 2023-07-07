@@ -7,7 +7,6 @@ from faasmctl.util.invoke import invoke_and_await
 from faasmctl.util.planner import prepare_planner_msg
 from google.protobuf.json_format import MessageToJson
 from invoke import task
-from requests import post
 
 
 @task(default=True)
@@ -22,7 +21,7 @@ def invoke(ctx, user, func, ini_file=None):
     # TODO: work out the number of messages
     num_messages = 1
     req = batch_exec_factory(user, func, num_messages)
-    json_msg = prepare_planner_msg("EXECUTE_BATCH", MessageToJson(req, indent=None))
+    msg = prepare_planner_msg("EXECUTE_BATCH", MessageToJson(req, indent=None))
 
     if not ini_file:
         ini_file = get_faasm_ini_file()
@@ -30,7 +29,7 @@ def invoke(ctx, user, func, ini_file=None):
     host, port = get_faasm_planner_host_port(ini_file)
     url = "http://{}:{}".format(host, port)
 
-    result = invoke_and_await(url, json_msg, num_messages)
+    result = invoke_and_await(url, msg, num_messages)
 
     # We print the outputData of the first message for backwards compatibility.
     # We could eventually change this behaviour
