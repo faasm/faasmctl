@@ -49,7 +49,15 @@ def bump(ctx, patch=False, minor=False, major=False):
     else:
         raise RuntimeError("Must set one in: --[patch,minor,major]")
 
+    # Change the corresponding idx
     new_ver_parts[idx] = str(int(new_ver_parts[idx]) + 1)
+
+    # Zero-out the following version numbers (i.e. lower priority). This is
+    # because if we tag a new major release, we want to zero-out the minor
+    # and patch versions (e.g. 0.2.0 comes after 0.1.9)
+    for next_idx in range(idx + 1, 3):
+        new_ver_parts[next_idx] = "0"
+
     new_ver = ".".join(new_ver_parts)
 
     for f in VERSIONED_FILES:
