@@ -42,14 +42,15 @@ def gen_proto_files():
     protoc_bin = (
         run(find_protoc_cmd, shell=True, capture_output=True)
         .stdout.decode("utf-8")
-        .split("\n")[0]
-        .strip()
+        .split("\n")
     )
+    p_bin = [p_bin for p_bin in protoc_bin if "build_subfolder" in p_bin]
+    p_bin = p_bin[0].strip()
 
     # Generate python protobuf files
     code_dir = "/usr/local/code/faasm/faabric"
     protoc_cmd = [
-        protoc_bin,
+        p_bin,
         "--proto_path={}".format(code_dir),
         "--python_out={}".format(code_dir),
         "{}/src/planner/planner.proto".format(code_dir),
