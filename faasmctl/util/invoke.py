@@ -1,5 +1,5 @@
 from faasmctl.util.planner import prepare_planner_msg
-from faasmctl.util.proto.faabric_pb2 import BatchExecuteRequestStatus
+from faasmctl.util.gen_proto.faabric_pb2 import BatchExecuteRequestStatus
 from google.protobuf.json_format import MessageToJson, Parse
 from requests import post
 from time import sleep

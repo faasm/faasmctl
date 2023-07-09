@@ -8,4 +8,4 @@ __pycache__
 venv-faasmctl
 
 # Protobuf files
-faasmctl/util/proto
+faasmctl/util/gen_proto

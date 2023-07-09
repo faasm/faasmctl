@@ -1,4 +1,4 @@
-from faasmctl.util.proto.planner_pb2 import HttpMessage
+from faasmctl.util.gen_proto.planner_pb2 import HttpMessage
 from google.protobuf.json_format import MessageToJson
 from requests import post
 

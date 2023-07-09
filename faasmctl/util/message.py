@@ -1,4 +1,4 @@
-from faasmctl.util.proto.faabric_pb2 import Message
+from faasmctl.util.gen_proto.faabric_pb2 import Message
 from faasmctl.util.random import generate_gid
 
 
