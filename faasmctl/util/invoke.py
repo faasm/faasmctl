@@ -1,8 +1,31 @@
-from faasmctl.util.planner import prepare_planner_msg
+from faasmctl.util.batch import batch_exec_factory
+from faasmctl.util.config import (
+    get_faasm_ini_file,
+    get_faasm_planner_host_port,
+)
 from faasmctl.util.gen_proto.faabric_pb2 import BatchExecuteRequestStatus
+from faasmctl.util.planner import prepare_planner_msg
 from google.protobuf.json_format import MessageToJson, Parse
 from requests import post
 from time import sleep
+
+
+def invoke_wasm(msg_dict, num_messages=1, ini_file=None):
+    """
+    Main entrypoint to invoke an arbitrary message in a Faasm cluster
+    """
+    req = batch_exec_factory(msg_dict, num_messages)
+    msg = prepare_planner_msg("EXECUTE_BATCH", MessageToJson(req, indent=None))
+
+    if not ini_file:
+        ini_file = get_faasm_ini_file()
+
+    host, port = get_faasm_planner_host_port(ini_file)
+    url = "http://{}:{}".format(host, port)
+
+    result = invoke_and_await(url, msg, num_messages)
+
+    return result
 
 
 def invoke_and_await(url, json_msg, expected_num_messages):

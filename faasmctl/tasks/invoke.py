@@ -1,11 +1,4 @@
-from faasmctl.util.batch import batch_exec_factory
-from faasmctl.util.config import (
-    get_faasm_ini_file,
-    get_faasm_planner_host_port,
-)
-from faasmctl.util.invoke import invoke_and_await
-from faasmctl.util.planner import prepare_planner_msg
-from google.protobuf.json_format import MessageToJson
+from faasmctl.util.invoke import invoke_wasm
 from invoke import task
 
 
@@ -16,20 +9,13 @@ def invoke(ctx, user, func, ini_file=None):
 
     TODO: think how to enable all the possible command line values in a
     scalable way.
-    UPDATE: maybe support passing a dict that we parse into a protobuf
     """
     # TODO: work out the number of messages
     num_messages = 1
-    req = batch_exec_factory(user, func, num_messages)
-    msg = prepare_planner_msg("EXECUTE_BATCH", MessageToJson(req, indent=None))
+    msg_dict = {"user": user, "function": func}
 
-    if not ini_file:
-        ini_file = get_faasm_ini_file()
-
-    host, port = get_faasm_planner_host_port(ini_file)
-    url = "http://{}:{}".format(host, port)
-
-    result = invoke_and_await(url, msg, num_messages)
+    # Invoke WASM using main API function
+    result = invoke_wasm(msg_dict, num_messages, ini_file)
 
     # We print the outputData of the first message for backwards compatibility.
     # We could eventually change this behaviour
