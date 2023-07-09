@@ -31,11 +31,11 @@ def gen_proto_files():
 
     print("Generating Faasm protobuf files...")
     tmp_ctr_name = "faasm_gen_proto"
-    cm = "docker run -d -it --name {} {}".format(tmp_ctr_name, FAASM_CLI_IMAGE)
+    cm = "docker run -d -i --name {} {}".format(tmp_ctr_name, FAASM_CLI_IMAGE)
     run(cm, shell=True, check=True)
 
     # Find the right protoc binary
-    docker_exec_prefix = "docker exec -it {}".format(tmp_ctr_name)
+    docker_exec_prefix = "docker exec {}".format(tmp_ctr_name)
     find_protoc_cmd = "{} bash -c 'find ~/.conan -name protoc'".format(
         docker_exec_prefix
     )
