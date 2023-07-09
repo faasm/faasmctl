@@ -6,3 +6,6 @@ __pycache__
 
 # Python venv
 venv-faasmctl
+
+# Protobuf files
+faasmctl/util/gen_proto
