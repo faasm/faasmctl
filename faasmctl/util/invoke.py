@@ -24,25 +24,34 @@ def invoke_and_await(url, json_msg, expected_num_messages):
     ber_status = Parse(response.text, BatchExecuteRequestStatus())
     ber_status.expectedNumMessages = expected_num_messages
 
-    # TODO: poll
     json_msg = prepare_planner_msg(
         "EXECUTE_BATCH_STATUS", MessageToJson(ber_status, indent=None)
     )
     while True:
-        # Sleep at the begining, so that the app is registered
+        # Sleep at the begining, so that the app is registered as in-flight
         sleep(poll_period)
 
         response = post(url, data=json_msg, timeout=None)
         if response.status_code != 200:
-            print(
-                "POST request failed (code: {}): {}".format(
-                    response.status_code, response.text
+            # FIXME: temporary workaround while the planner does not control
+            # batch scheduling (and thus doesn't keep track of the apps in
+            # flight). We may query for an app result before it is finished.
+            # In this case, by default, the planner endpoint fails. But it is
+            # not an error (it will be in the future)
+            if response.text == "App not registered in results":
+                print("WARNING: app not registered in results")
+            else:
+                print(
+                    "POST request failed (code: {}): {}".format(
+                        response.status_code, response.text
+                    )
                 )
-            )
-            break
-
-        ber_status = Parse(response.text, BatchExecuteRequestStatus())
-        if ber_status.finished:
-            break
+                break
+        else:
+            # FIXME: we can remove this else when the previous FIXME is fixed,
+            # and reduce a level of indentation in the following three lines
+            ber_status = Parse(response.text, BatchExecuteRequestStatus())
+            if ber_status.finished:
+                break
 
     return ber_status
