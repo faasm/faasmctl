@@ -20,7 +20,6 @@ def gen_proto_files():
     """
     Generate python proto files to interact with the Faasm cluster
     """
-    print("hullo")
     if not exists(GEN_PROTO_DIR):
         makedirs(GEN_PROTO_DIR)
 
@@ -32,13 +31,20 @@ def gen_proto_files():
 
     print("Generating Faasm protobuf files...")
     tmp_ctr_name = "faasm_gen_proto"
-    docker_cmd = "docker run -d -it --name {} {}".format(tmp_ctr_name, FAASM_CLI_IMAGE)
-    run(docker_cmd, shell=True, check=True)
+    cm = "docker run -d -it --name {} {}".format(tmp_ctr_name, FAASM_CLI_IMAGE)
+    run(cm, shell=True, check=True)
 
-    # TODO: finish me!
+    # Find the right protoc binary
     docker_exec_prefix = "docker exec -it {}".format(tmp_ctr_name)
-    find_protoc_cmd = "{} bash -c 'find ~/.conan -name protoc'".format(docker_exec_prefix)
-    protoc_bin = run(find_protoc_cmd, shell=True, capture_output=True).stdout.decode("utf-8").split("\n")[0].strip()
+    find_protoc_cmd = "{} bash -c 'find ~/.conan -name protoc'".format(
+        docker_exec_prefix
+    )
+    protoc_bin = (
+        run(find_protoc_cmd, shell=True, capture_output=True)
+        .stdout.decode("utf-8")
+        .split("\n")[0]
+        .strip()
+    )
 
     # Generate python protobuf files
     code_dir = "/usr/local/code/faasm/faabric"
@@ -61,7 +67,9 @@ def gen_proto_files():
             proto_ctr_path = join(code_dir, "src", "proto", proto_file)
         proto_faasmctl_path = join(GEN_PROTO_DIR, proto_file)
 
-        docker_cp_cmd = "docker cp {}:{} {}".format(tmp_ctr_name, proto_ctr_path, proto_faasmctl_path)
+        docker_cp_cmd = "docker cp {}:{} {}".format(
+            tmp_ctr_name, proto_ctr_path, proto_faasmctl_path
+        )
         run(docker_cp_cmd, shell=True, check=True)
 
     # Delete container
