@@ -1,4 +1,3 @@
-# TODO: somehow generate proto files in faasmctl (right now they are copied in)
 from faasmctl.util.message import message_factory
 from faasmctl.util.gen_proto.faabric_pb2 import BatchExecuteRequest
 from faasmctl.util.random import generate_gid
