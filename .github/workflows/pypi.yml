@@ -1,6 +1,10 @@
 name: "Publish to PyPI"
 
 on:
+  # Allow to publish to PyPI on worklow dispatch. Be careful as we can not
+  # overwrite packages published to PyPI, so each run of this workflow needs
+  # to be accompanied by a version bump
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
