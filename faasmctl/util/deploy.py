@@ -7,6 +7,7 @@ from os.path import exists, join
 from shutil import rmtree
 from subprocess import CalledProcessError, run
 
+
 def _check_version_mismatch(checkout_path):
     # Check if there's a mismatch between the checked-out code version and
     # faasmctl's pinned faasm version
@@ -14,8 +15,12 @@ def _check_version_mismatch(checkout_path):
         faasm_ver = fh.read()
         faasm_ver = faasm_ver.strip()
     if faasm_ver != FAASM_VERSION:
-        print("WARNING: mismatch between the checked-out version and"
-              "faasmctl's pinned faasm version ({} != {})".format(faasm_ver, FAASM_VERSION))
+        print(
+            "WARNING: mismatch between the checked-out version and"
+            "faasmctl's pinned faasm version ({} != {})".format(
+                faasm_ver, FAASM_VERSION
+            )
+        )
 
     return faasm_ver
 
@@ -26,7 +31,9 @@ def fetch_faasm_code(faasm_source=None, force=False):
     """
     # Eventually we may want to support overwriting FAASM_SOURCE_DIR and
     # FAASM_VERSION
-    checkout_path = faasm_source if faasm_source else join(FAASM_SOURCE_DIR, FAASM_VERSION)
+    checkout_path = (
+        faasm_source if faasm_source else join(FAASM_SOURCE_DIR, FAASM_VERSION)
+    )
     must_checkout = force or not exists(checkout_path)
 
     if not must_checkout:
@@ -52,11 +59,13 @@ def fetch_faasm_code(faasm_source=None, force=False):
         # being root-owned
         if e.returncode == 128:
             tmp_fix = "sudo rm -rf {}".format(checkout_path)
-            print("ERROR: we were not able to clean the checkout dir. This is"
-                  " probably due to an issue in Faasm where some directories "
-                  "in a compose cluster are root-owned (in the container). "
-                  "Try running the following and trying again:\n{}".format(tmp_fix))
-            raise RuntimeError("Error cleaning-up. Try running:\n{}".format(tmp_fix))
+            print(
+                "ERROR: we were not able to clean the checkout dir. This is"
+                " probably due to an issue in Faasm where some directories "
+                "in a compose cluster are root-owned (in the container). "
+                "Try running the following:\n{}".format(tmp_fix)
+            )
+            raise RuntimeError("Error. Try running:\n{}".format(tmp_fix))
 
     faasm_ver = _check_version_mismatch(checkout_path)
 
