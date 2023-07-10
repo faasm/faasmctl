@@ -6,7 +6,7 @@ from subprocess import run
 VERSIONED_FILES = [
     "pyproject.toml",
     "README.md",
-    "faasmctl/VERSION",
+    "faasmctl/util/version.py",
 ]
 
 

@@ -1,4 +1,4 @@
-# Faasm CTL [![Tests](https://github.com/faasm/faasmctl/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/faasm/faasmctl/actions/workflows/tests.yml)
+# Faasm CTL [![Tests](https://github.com/faasm/faasmctl/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/faasm/faasmctl/actions/workflows/tests.yml) ![PyPI](https://img.shields.io/pypi/v/faasmctl)
 
 `faasmctl` is a command line script to deploy, manage, and interact with a
 running [Faasm](https://github.com/faasm/faasm) cluster.
@@ -8,7 +8,7 @@ running [Faasm](https://github.com/faasm/faasm) cluster.
 To install `faasmctl` you need a working `pip` (virtual-)environment. Then:
 
 ```bash
-pip install faasmctl==0.2.2
+pip install faasmctl==0.2.3
 ```
 
 ## Usage
