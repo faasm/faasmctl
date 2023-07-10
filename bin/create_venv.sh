@@ -20,4 +20,7 @@ fi
 pip_cmd install -U pip
 pip_cmd install -r ${PROJ_ROOT}/dev_requirements.txt
 
+# Generate the protobuf files if necessary
+${PROJ_ROOT}/bin/gen_proto_files.py
+
 popd >> /dev/null
