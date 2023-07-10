@@ -1,7 +1,7 @@
-from os.path import dirname, join, realpath
+from os.path import dirname, realpath
 
-PROJ_ROOT = dirname(dirname(dirname(realpath(__file__))))
-
-FAASMCTL_DIR = join(PROJ_ROOT, "faasmctl")
-UTIL_DIR = join(FAASMCTL_DIR, "util")
-GEN_PROTO_DIR = join(UTIL_DIR, "gen_proto")
+# When building the project's wheel only the `faasmctl` is included. Thus all
+# imports in `faasmctl` need to be relative to `faasmctl` itself (not the git
+# source). We also define a DEV proj root, for dev. related tasks
+PROJ_ROOT = dirname(dirname(realpath(__file__)))
+DEV_PROJ_ROOT = dirname(dirname(dirname(realpath(__file__))))

@@ -1,12 +1,12 @@
 from invoke import task
-from faasmctl.util.env import PROJ_ROOT
+from faasmctl.util.env import DEV_PROJ_ROOT
 from faasmctl.util.version import get_version
 from subprocess import run
 
 VERSIONED_FILES = [
     "pyproject.toml",
     "README.md",
-    "VERSION",
+    "faasmctl/VERSION",
 ]
 
 
@@ -21,14 +21,14 @@ def tag(ctx, force=False):
         "git tag {} {}".format("--force" if force else "", tag_name),
         shell=True,
         check=True,
-        cwd=PROJ_ROOT,
+        cwd=DEV_PROJ_ROOT,
     )
 
     run(
         "git push {} origin {}".format("--force" if force else "", tag_name),
         shell=True,
         check=True,
-        cwd=PROJ_ROOT,
+        cwd=DEV_PROJ_ROOT,
     )
 
 
@@ -62,4 +62,4 @@ def bump(ctx, patch=False, minor=False, major=False):
 
     for f in VERSIONED_FILES:
         sed_cmd = "sed -i 's/{}/{}/g' {}".format(old_ver, new_ver, f)
-        run(sed_cmd, shell=True, check=True, cwd=PROJ_ROOT)
+        run(sed_cmd, shell=True, check=True, cwd=DEV_PROJ_ROOT)
