@@ -22,15 +22,21 @@ def get_faasm_ini_value(ini_file, section, key):
     return config[section].get(key, "")
 
 
-def get_faasm_upload_host_port(ini_file):
-    host = get_faasm_ini_value(ini_file, "Faasm", "upload_host")
+def get_faasm_upload_host_port(ini_file, in_docker=False):
+    if in_docker:
+        host = get_faasm_ini_value(ini_file, "Faasm", "upload_host_in_docker")
+    else:
+        host = get_faasm_ini_value(ini_file, "Faasm", "upload_host")
     port = get_faasm_ini_value(ini_file, "Faasm", "upload_port")
 
     return host, port
 
 
-def get_faasm_planner_host_port(ini_file):
-    host = get_faasm_ini_value(ini_file, "Faasm", "planner_host")
+def get_faasm_planner_host_port(ini_file, in_docker=False):
+    if in_docker:
+        host = get_faasm_ini_value(ini_file, "Faasm", "planner_host_in_docker")
+    else:
+        host = get_faasm_ini_value(ini_file, "Faasm", "planner_host")
     port = get_faasm_ini_value(ini_file, "Faasm", "planner_port")
 
     return host, port
