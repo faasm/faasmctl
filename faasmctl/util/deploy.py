@@ -67,6 +67,10 @@ def fetch_faasm_code(faasm_source=None, force=False):
             )
             raise RuntimeError("Error. Try running:\n{}".format(tmp_fix))
 
+    # FIXME: allow a purely detached faasm checkout. Right now, cpp's code
+    # source is _always_ mounted from clients/cpp
+    run("git submodule update --init", shell=True, check=True, cwd=checkout_path)
+
     faasm_ver = _check_version_mismatch(checkout_path)
 
     return checkout_path, faasm_ver
@@ -101,6 +105,7 @@ def generate_ini_file(backend, out_file, **kwargs):
         fh.write("backend = {}\n".format(backend))
         if backend == "compose":
             fh.write("working_dir = {}\n".format(working_dir))
+            fh.write("mount_source = {}\n".format(kwargs["mount_source"]))
         if backend == "compose":
             fh.write("cluster_name = {}\n".format(cluster_name))
         fh.write("upload_host = {}\n".format(upload_ip))

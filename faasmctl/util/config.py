@@ -2,6 +2,8 @@ from configparser import ConfigParser
 from os import environ
 from os.path import exists
 
+BACKEND_INI_STRING = "backend"
+
 
 def get_faasm_ini_file():
     """
