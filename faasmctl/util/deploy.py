@@ -69,7 +69,8 @@ def fetch_faasm_code(faasm_source=None, force=False):
 
     # FIXME: allow a purely detached faasm checkout. Right now, cpp's code
     # source is _always_ mounted from clients/cpp
-    run("git submodule update --init", shell=True, check=True, cwd=checkout_path)
+    git_cmd = "git submodule update --init"
+    run(git_cmd, shell=True, check=True, cwd=checkout_path)
 
     faasm_ver = _check_version_mismatch(checkout_path)
 

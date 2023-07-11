@@ -105,7 +105,8 @@ def delete_compose_cluster(ini_file):
 def run_compose_cmd(ini_file, cmd):
     cluster_name = get_faasm_ini_value(ini_file, "Faasm", "cluster_name")
     work_dir = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
-    mount_source = get_faasm_ini_value(ini_file, "Faasm", "mount_source") == "True"
+    mount_source = get_faasm_ini_value(ini_file, "Faasm", "mount_source")
+    mount_source = mount_source == "True"
 
     compose_cmd = [
         "docker compose",
@@ -118,5 +119,5 @@ def run_compose_cmd(ini_file, cmd):
         shell=True,
         check=True,
         cwd=work_dir,
-        env=get_compose_env_vars(work_dir, mount_source)
+        env=get_compose_env_vars(work_dir, mount_source),
     )

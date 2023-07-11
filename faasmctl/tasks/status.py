@@ -21,7 +21,9 @@ def services(ctx, ini_file=None):
 
     backend = get_faasm_ini_value(ini_file, "Faasm", BACKEND_INI_STRING)
     if backend != COMPOSE_BACKEND:
-        raise RuntimeError("Can only get a CLI shell for a cluster that is "
-                           "running on a '{}' backend".format(COMPOSE_BACKEND))
+        raise RuntimeError(
+            "Can only get a CLI shell for a cluster that is "
+            "running on a '{}' backend".format(COMPOSE_BACKEND)
+        )
 
     run_compose_cmd(ini_file, "ps -a")

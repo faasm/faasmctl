@@ -14,8 +14,10 @@ def do_run_cmd(cli, cmd, ini_file):
 
     backend = get_faasm_ini_value(ini_file, "Faasm", BACKEND_INI_STRING)
     if backend != COMPOSE_BACKEND:
-        raise RuntimeError("Can only get a CLI shell for a cluster that is "
-                           "running on a '{}' backend".format(COMPOSE_BACKEND))
+        raise RuntimeError(
+            "Can only get a CLI shell for a cluster that is "
+            "running on a '{}' backend".format(COMPOSE_BACKEND)
+        )
 
     # First, start the container once to avoid recreating it multiple times
     up_cmd = "up -d --no-recreate {}".format(cli)
