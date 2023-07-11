@@ -1,0 +1,125 @@
+from datetime import datetime
+from faasmctl.util.env import FAASM_SOURCE_DIR
+from faasmctl.util.network import LOCALHOST_IP
+from faasmctl.util.version import FAASM_VERSION
+from os import makedirs
+from os.path import exists, join
+from shutil import rmtree
+from subprocess import CalledProcessError, run
+
+
+def _check_version_mismatch(checkout_path):
+    # Check if there's a mismatch between the checked-out code version and
+    # faasmctl's pinned faasm version
+    with open(join(checkout_path, "VERSION"), "r") as fh:
+        faasm_ver = fh.read()
+        faasm_ver = faasm_ver.strip()
+    if faasm_ver != FAASM_VERSION:
+        print(
+            "WARNING: mismatch between the checked-out version and"
+            "faasmctl's pinned faasm version ({} != {})".format(
+                faasm_ver, FAASM_VERSION
+            )
+        )
+
+    return faasm_ver
+
+
+def fetch_faasm_code(faasm_source=None, force=False):
+    """
+    Check-out the Faasm tag
+    """
+    # Eventually we may want to support overwriting FAASM_SOURCE_DIR and
+    # FAASM_VERSION
+    checkout_path = (
+        faasm_source if faasm_source else join(FAASM_SOURCE_DIR, FAASM_VERSION)
+    )
+    must_checkout = force or not exists(checkout_path)
+
+    if not must_checkout:
+        faasm_ver = _check_version_mismatch(checkout_path)
+        return checkout_path, faasm_ver
+
+    # Ensure a clean clone directory
+    rmtree(checkout_path, ignore_errors=True)
+    makedirs(checkout_path, exist_ok=True)
+
+    print("Checking out Faasm v{} to {}".format(FAASM_VERSION, checkout_path))
+    git_cmd = [
+        "git clone",
+        "--branch v{}".format(FAASM_VERSION),
+        "https://github.com/faasm/faasm",
+        checkout_path,
+    ]
+    git_cmd = " ".join(git_cmd)
+    try:
+        run(git_cmd, shell=True, check=True)
+    except CalledProcessError as e:
+        # FIXME: fix this behaviour in faasm caused by the `./dev` directory
+        # being root-owned
+        if e.returncode == 128:
+            tmp_fix = "sudo rm -rf {}".format(checkout_path)
+            print(
+                "ERROR: we were not able to clean the checkout dir. This is"
+                " probably due to an issue in Faasm where some directories "
+                "in a compose cluster are root-owned (in the container). "
+                "Try running the following:\n{}".format(tmp_fix)
+            )
+            raise RuntimeError("Error. Try running:\n{}".format(tmp_fix))
+
+    # FIXME: allow a purely detached faasm checkout. Right now, cpp's code
+    # source is _always_ mounted from clients/cpp
+    git_cmd = "git submodule update --init"
+    run(git_cmd, shell=True, check=True, cwd=checkout_path)
+
+    faasm_ver = _check_version_mismatch(checkout_path)
+
+    return checkout_path, faasm_ver
+
+
+def generate_ini_file(backend, out_file, **kwargs):
+    if backend == "compose":
+        if "name" not in kwargs or "cwd" not in kwargs:
+            raise RuntimeError("Not enough compose arguments provided!")
+        cluster_name = kwargs["name"]
+        working_dir = kwargs["cwd"]
+
+        upload_ip = LOCALHOST_IP
+        upload_port = "8002"
+        planner_ip = LOCALHOST_IP
+        planner_port = "8080"
+        worker_names = []
+        worker_ips = []
+    else:
+        raise RuntimeError("Backend {} not supported!".format(backend))
+
+    if not out_file:
+        out_file = "./faasm.ini"
+
+    print("Generating Faasm INI file at: {}".format(out_file))
+    with open(out_file, "w") as fh:
+        fh.write("[Faasm]\n")
+
+        # This comment line can't be outside of the Faasm section
+        fh.write("# Auto-generated at {}\n".format(datetime.now()))
+
+        fh.write("backend = {}\n".format(backend))
+        if backend == "compose":
+            fh.write("working_dir = {}\n".format(working_dir))
+            fh.write("mount_source = {}\n".format(kwargs["mount_source"]))
+        if backend == "compose":
+            fh.write("cluster_name = {}\n".format(cluster_name))
+        fh.write("upload_host = {}\n".format(upload_ip))
+        if backend == "compose":
+            fh.write("upload_host_in_docker = upload\n")
+        fh.write("upload_port = {}\n".format(upload_port))
+        fh.write("planner_host = {}\n".format(planner_ip))
+        if backend == "compose":
+            fh.write("planner_host_in_docker = planner\n")
+        fh.write("planner_port = {}\n".format(planner_port))
+        if backend == "k8s":
+            fh.write("worker_names = {}\n".format(",".join(worker_names)))
+            fh.write("worker_ips = {}\n".format(",".join(worker_ips)))
+
+    with open(out_file, "r") as fh:
+        print(fh.read())

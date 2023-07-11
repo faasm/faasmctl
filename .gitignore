@@ -9,3 +9,9 @@ venv-faasmctl
 
 # Protobuf files
 faasmctl/util/gen_proto
+
+# Config files
+faasmctl/.config
+
+# Faasm ini files
+*.ini

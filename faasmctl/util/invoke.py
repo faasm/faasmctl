@@ -3,6 +3,7 @@ from faasmctl.util.config import (
     get_faasm_ini_file,
     get_faasm_planner_host_port,
 )
+from faasmctl.util.docker import in_docker
 from faasmctl.util.gen_proto.faabric_pb2 import BatchExecuteRequestStatus
 from faasmctl.util.planner import prepare_planner_msg
 from google.protobuf.json_format import MessageToJson, Parse
@@ -20,7 +21,7 @@ def invoke_wasm(msg_dict, num_messages=1, ini_file=None):
     if not ini_file:
         ini_file = get_faasm_ini_file()
 
-    host, port = get_faasm_planner_host_port(ini_file)
+    host, port = get_faasm_planner_host_port(ini_file, in_docker())
     url = "http://{}:{}".format(host, port)
 
     result = invoke_and_await(url, msg, num_messages)
