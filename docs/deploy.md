@@ -33,22 +33,19 @@ Then, you may run:
 faasmctl deploy.compose \
     --ini-file=<ini_file_path> (default: ./faasm.ini) \
     --workers=<num_workers> (default: 2) \
-    [--dev] \
+    --mount-source=<path_to_local_checkout> (default: None) \
     [--clean]
 ```
 
-The `--workers` flag indicates the number of workers to deploy in the cluster.
-The `--dev` flag indicates that you want to start a development cluster. In
-a development cluster we mount a local check out of the code (and built
-binaries), we read the source location from the `FAASM_SOURCE_DIR` env.
-variable.
-
-> NOTE: you must set the FAASM_SOURCE_DIR env. variable in order to use the
-> --dev flag.
-
+The `--workers` argument indicates the number of workers to start in the cluster.
+The `--mount-source` argument indicates a local checkout of Faasm's source code
+to mount into the compose cluster. This means that we mount both the code
+and built binaries.
 The `--clean` flag erases any cached checkouts of the source code used
-internally by `faasmctl`. Note that the `--clean` flag and the `--dev` flag
-are incompatible, as it could lead to accidentally removing user code.
+internally by `faasmctl`.
+
+> WARNING: The `--clean` flag and the `--dev` flag are incompatible, as it
+> could lead to accidentally removing user code.
 
 In addition, you may set the WASM VM as an environment variable too. The
 supported values are `WASM_VM=[wavm,wamr,sgx,sgx-sim]`.

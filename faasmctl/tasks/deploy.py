@@ -9,34 +9,28 @@ from subprocess import run
 
 
 @task
-def compose(ctx, workers=2, dev=False, clean=False, ini_file=None):
+def compose(ctx, workers=2, mount_source=None, clean=False, ini_file=None):
     """
     Deploy a Faasm cluster on docker compose
     """
     # First, check-out the Faasm source if necessary
-    if "FAASM_SOURCE_DIR" in environ:
+    if mount_source:
         if clean:
             print(
-                "WARNING: using the --clean flag with a FAASM_SOURCE_DIR "
+                "WARNING: using the --clean flag with --mount_source "
                 "env. variable is disabled, as local changes could be "
                 "erased!"
             )
         faasm_checkout, faasm_ver = fetch_faasm_code(
-            faasm_source=environ["FAASM_SOURCE_DIR"], force=False
+            faasm_source=mount_source, force=False
         )
     else:
-        if dev:
-            print(
-                "WARNING: using the --dev flag to start a development "
-                "cluster is only supported if you set the FAASM_SOURCE_DIR"
-                " env. variable. For more information check the deployment"
-                " documentation on ./docs/deploy.md"
-            )
-            dev = False
+        # Otherwise, we will check out the code in a faasmctl-specific working
+        # directoy
         faasm_checkout, faasm_ver = fetch_faasm_code(force=clean)
 
     env = {}
-    if dev:
+    if mount_source:
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
         env["FAASM_BUILD_MOUNT"] = "/build/faasm"
         env["FAASM_CODE_MOUNT"] = "/usr/local/code/faasm"
