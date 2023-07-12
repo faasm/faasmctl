@@ -6,6 +6,7 @@ from faasmctl.util.config import (
     get_faasm_ini_value,
 )
 from invoke import task
+from os.path import abspath
 
 
 def do_run_cmd(cli, cmd, ini_file):
@@ -23,9 +24,16 @@ def do_run_cmd(cli, cmd, ini_file):
     up_cmd = "up -d --no-recreate {}".format(cli)
     run_compose_cmd(ini_file, up_cmd)
 
-    # Second, actually run the requested command
+    # Second, copy the the ini file inside the container
+    ini_file = abspath(ini_file)
+    ini_file_ctr_path = "/tmp/faasm.ini"
+    cp_cmd = "cp {} {}:{}".format(ini_file, cli, ini_file_ctr_path)
+    run_compose_cmd(ini_file, cp_cmd)
+
+    # Lastly, actually run the requested command
     compose_cmd = [
         "exec",
+        "-e FAASM_INI_FILE={}".format(ini_file_ctr_path),
         "-it" if not cmd else "",
         cli,
         "bash" if not cmd else cmd,
