@@ -154,6 +154,6 @@ def wait_for_venv(ini_file, cli):
 
             print(
                 "Waiting for python virtual environment to be ready "
-                " at {} ...".format(venv_path)
+                "at {} ...".format(venv_path)
             )
             sleep(3)
