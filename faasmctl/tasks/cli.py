@@ -54,7 +54,7 @@ def faasm(ctx, cmd=None, ini_file=None):
     - cmd (str): command to run in the CLI container
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("faasm", cmd, ini_file)
+    do_run_cmd("faasm-cli", cmd, ini_file)
 
 
 @task
