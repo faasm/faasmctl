@@ -1,5 +1,5 @@
 from faasmctl.util.backend import COMPOSE_BACKEND
-from faasmctl.util.compose import run_compose_cmd
+from faasmctl.util.compose import run_compose_cmd, wait_for_venv
 from faasmctl.util.config import (
     BACKEND_INI_STRING,
     get_faasm_ini_file,
@@ -29,6 +29,11 @@ def do_run_cmd(cli, cmd, ini_file):
     ini_file_ctr_path = "/tmp/faasm.ini"
     cp_cmd = "cp {} {}:{}".format(ini_file, cli, ini_file_ctr_path)
     run_compose_cmd(ini_file, cp_cmd)
+
+    # Third, wait for the virtual environment to be ready if we need to. We
+    # only need to wait for the virtual environment if we are either mounting
+    # the source, or using one of the clients
+    wait_for_venv(ini_file, cli)
 
     # Lastly, actually run the requested command
     compose_cmd = [

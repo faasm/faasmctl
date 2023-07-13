@@ -9,7 +9,7 @@ from invoke import task
 
 
 @task(default=True, iterable=["s"])
-def logs(ctx, s, ini_file=None):
+def logs(ctx, s, follow=False, ini_file=None):
     """
     Get the logs of a running service in the cluster
 
@@ -27,4 +27,10 @@ def logs(ctx, s, ini_file=None):
             "running on a '{}' backend".format(COMPOSE_BACKEND)
         )
 
-    run_compose_cmd(ini_file, "logs -f {}".format(" ".join(s)))
+    compose_cmd = [
+        "logs",
+        "-f" if follow else "",
+        "{}".format(" ".join(s)),
+    ]
+    compose_cmd = " ".join(compose_cmd)
+    run_compose_cmd(ini_file, compose_cmd)

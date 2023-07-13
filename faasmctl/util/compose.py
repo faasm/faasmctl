@@ -2,8 +2,9 @@ from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.random import generate_gid
 from os import environ
-from os.path import join
+from os.path import isfile, join
 from subprocess import run
+from time import sleep
 
 
 def get_compose_env_vars(faasm_checkout, mount_source):
@@ -121,3 +122,36 @@ def run_compose_cmd(ini_file, cmd):
         cwd=work_dir,
         env=get_compose_env_vars(work_dir, mount_source),
     )
+
+
+def wait_for_venv(ini_file, cli):
+    """
+    When executing a command in a CLI container, the first time we start it
+    we may run into a race condition between:
+    (1) up-ing, exec-ing, and inv-oking a task in the container, and
+    (2) ./bin/create_venv.sh installing all python venv dependencies
+    This is only a problem when mounting the sources: containers ship with a
+    fully fledged `./venv`, but not code checkouts. Thus when mounting the
+    source the host version overwrites the container's `./venv`
+    """
+    # FIXME: we only need to wait for the venv even if we don't mount the
+    # source for the clients because we ALWAYS mount ./clients/cpp, and this
+    # needs to be fixed
+    mount_source = get_faasm_ini_value(ini_file, "Faasm", "mount_source")
+    mount_source = mount_source == "True"
+    work_dir = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
+    if mount_source or cli != "faasm-cli":
+        # Work out the right venv path
+        venv_path = work_dir
+        if cli != "faasm-cli":
+            venv_path = join(venv_path, "clients", cli)
+        venv_path = join(venv_path, "venv", "faasm_venv.BUILT")
+
+        # Loop until the file exists
+        while True:
+            if isfile(venv_path):
+                break
+
+            print("Waiting for python virtual environment to be ready "
+                  " at {} ...".format(venv_path))
+            sleep(3)
