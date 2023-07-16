@@ -118,12 +118,14 @@ def run_compose_cmd(ini_file, cmd):
         cmd,
     ]
     compose_cmd = " ".join(compose_cmd)
+
+    compose_env = get_compose_env_vars(work_dir, mount_source)
     run(
         compose_cmd,
         shell=True,
         check=True,
         cwd=work_dir,
-        env=get_compose_env_vars(work_dir, mount_source),
+        env=compose_env,
     )
 
 

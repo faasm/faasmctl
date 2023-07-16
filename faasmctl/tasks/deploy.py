@@ -30,6 +30,7 @@ def compose(ctx, workers=2, mount_source=None, clean=False, ini_file=None):
         faasm_checkout, faasm_ver = fetch_faasm_code(
             faasm_source=mount_source, force=False
         )
+        mount_source = True
     else:
         # Otherwise, we will check out the code in a faasmctl-specific working
         # directoy
