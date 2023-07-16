@@ -145,7 +145,6 @@ def wait_for_venv(ini_file, cli):
     # needs to be fixed
     mount_source = get_faasm_ini_value(ini_file, "Faasm", "mount_source")
     mount_source = mount_source == "True"
-    print(mount_source)
     work_dir = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
     if mount_source or cli != "faasm-cli":
         # Work out the right venv path
