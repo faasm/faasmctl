@@ -15,7 +15,6 @@ def in_docker():
     sets certain env. vars when running inside a container. This function
     checks for them and returns True if successful
     """
-    print("ENVIRON: {}".format(environ))
     for env_var in IN_DOCKER_ENV_VARS:
         if env_var in environ and environ[env_var] == "on":
             return True

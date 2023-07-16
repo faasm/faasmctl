@@ -3,7 +3,7 @@ from faasmctl.util.env import FAASM_SOURCE_DIR
 from faasmctl.util.network import LOCALHOST_IP
 from faasmctl.util.version import FAASM_VERSION
 from os import makedirs
-from os.path import exists, join
+from os.path import abspath, exists, join
 from shutil import rmtree
 from subprocess import CalledProcessError, run
 
@@ -123,3 +123,5 @@ def generate_ini_file(backend, out_file, **kwargs):
 
     with open(out_file, "r") as fh:
         print(fh.read())
+
+    return abspath(out_file)

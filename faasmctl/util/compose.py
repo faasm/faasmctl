@@ -60,6 +60,9 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
     - workers (int): number of workers to deploy
     - mount_source (bool): flag to indicate whether we mount code/binaries
     - ini_file (str): path to the ini_file to generate (if selected)
+
+    Returns:
+    - (str): path to the generated ini_file
     """
     env = get_compose_env_vars(faasm_checkout, mount_source)
 
@@ -76,7 +79,7 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
     run(cmd, shell=True, check=True, cwd=faasm_checkout, env=env)
 
     # Finally, generate the faasm.ini file to interact with the cluster
-    generate_ini_file(
+    return generate_ini_file(
         "compose",
         out_file=ini_file,
         name=env["COMPOSE_PROJECT_NAME"],
