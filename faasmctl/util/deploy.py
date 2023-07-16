@@ -68,9 +68,12 @@ def fetch_faasm_code(faasm_source=None, force=False):
             raise RuntimeError("Error. Try running:\n{}".format(tmp_fix))
 
     # FIXME: allow a purely detached faasm checkout. Right now, cpp's code
-    # source is _always_ mounted from clients/cpp
+    # source is _always_ mounted from clients/cpp, and so is clients/python,
+    # and transitively clients/python/third-party/cpp
     git_cmd = "git submodule update --init"
     run(git_cmd, shell=True, check=True, cwd=checkout_path)
+    git_cmd = "git submodule update --init ./third-party/cpp"
+    run(git_cmd, shell=True, check=True, cwd=join(checkout_path, "clients", "python"))
 
     faasm_ver = _check_version_mismatch(checkout_path)
 

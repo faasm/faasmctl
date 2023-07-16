@@ -1,4 +1,8 @@
-from faasmctl.util.compose import deploy_compose_cluster, run_compose_cmd
+from faasmctl.util.compose import (
+    deploy_compose_cluster,
+    populate_host_sysroot,
+    run_compose_cmd,
+)
 from faasmctl.util.deploy import fetch_faasm_code
 from invoke import task
 from os.path import abspath
@@ -31,6 +35,10 @@ def compose(ctx, workers=2, mount_source=None, clean=False, ini_file=None):
             faasm_source=mount_source, force=False
         )
         mount_source = True
+
+        # If mounting the source code, we need to populate the host's
+        # sysroot to mount it into the containers
+        populate_host_sysroot(faasm_checkout)
     else:
         # Otherwise, we will check out the code in a faasmctl-specific working
         # directoy

@@ -1,8 +1,9 @@
 from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.random import generate_gid
-from os import environ
-from os.path import isfile, join
+from os import environ, makedirs
+from os.path import exists, isfile, join
+from shutil import rmtree
 from subprocess import run
 from time import sleep
 
@@ -144,6 +145,7 @@ def wait_for_venv(ini_file, cli):
     # needs to be fixed
     mount_source = get_faasm_ini_value(ini_file, "Faasm", "mount_source")
     mount_source = mount_source == "True"
+    print(mount_source)
     work_dir = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
     if mount_source or cli != "faasm-cli":
         # Work out the right venv path
@@ -162,3 +164,67 @@ def wait_for_venv(ini_file, cli):
                 "at {} ...".format(venv_path)
             )
             sleep(3)
+
+
+def populate_host_sysroot(faasm_checkout, clean=False):
+    """
+    Populate the host's sysroot under `./dev/faasm-local` to be shared by
+    all containers in a compose cluster with mounted-in binaries and code
+    """
+    dirs_to_copy = {
+        "FAASM_CLI_IMAGE": ["runtime_root"],
+        "CPP_CLI_IMAGE": ["llvm-sysroot", "native", "toolchain"],
+        "PYTHON_CLI_IMAGE": ["python3.8"],
+    }
+
+    # TODO: should we make this variable configurable?
+    host_sysroot_path = join(faasm_checkout, "dev", "faasm-local")
+
+    if clean:
+        rmtree(host_sysroot_path)
+
+    if exists(host_sysroot_path):
+        return
+
+    makedirs(host_sysroot_path)
+
+    def copy_from_ctr_to_host(image_tag, dir_path):
+        """
+        Helper method to copy data from the sysroot inside a docker container
+        into the host's mounted (and shared) sysroot
+        """
+        ctr_path = join("/usr/local/faasm", dir_path)
+        host_path = join(host_sysroot_path, dir_path)
+
+        # Start a temporary ctr to copy from
+        tmp_ctr = "cp_sysroot_ctr"
+        run_cmd = "docker run -d --name {} {}".format(tmp_ctr, image_tag)
+        run(run_cmd, shell=True, check=True)
+
+        # Do the actual copy
+        try:
+            print("Populating {} from {}:{}".format(host_path, ctr_path, image_tag))
+            cp_cmd = "docker cp {}:{} {}".format(tmp_ctr, ctr_path, host_path)
+            run(cp_cmd, shell=True, check=True)
+        except Exception as e:
+            print("Caught exception copying: {}".format(e))
+
+        # Delete the tmp container unconditionally
+        del_cmd = "docker rm -f {}".format(tmp_ctr)
+        run(del_cmd, shell=True, check=True)
+
+    # Get the docker image tags from the .env file in Faasm's source checkout
+    env_file_path = join(faasm_checkout, ".env")
+    with open(env_file_path, "r") as fh:
+        env_file = fh.readlines()
+        env_file = [line.strip() for line in env_file]
+
+    # Get the actual image tag by finding the right line in the file. We are
+    # unncesserily iterating over the files three times, but we don't care
+    for image in dirs_to_copy:
+        image_tag = [line.split("=")[1] for line in env_file if line.startswith(image)]
+        assert len(image_tag) == 1
+        image_tag = image_tag[0]
+
+        for dir_path in dirs_to_copy[image]:
+            copy_from_ctr_to_host(image_tag, dir_path)
