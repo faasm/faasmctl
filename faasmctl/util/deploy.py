@@ -3,7 +3,7 @@ from faasmctl.util.env import FAASM_SOURCE_DIR
 from faasmctl.util.network import LOCALHOST_IP
 from faasmctl.util.version import FAASM_VERSION
 from os import makedirs
-from os.path import exists, join
+from os.path import abspath, exists, join
 from shutil import rmtree
 from subprocess import CalledProcessError, run
 
@@ -68,9 +68,12 @@ def fetch_faasm_code(faasm_source=None, force=False):
             raise RuntimeError("Error. Try running:\n{}".format(tmp_fix))
 
     # FIXME: allow a purely detached faasm checkout. Right now, cpp's code
-    # source is _always_ mounted from clients/cpp
+    # source is _always_ mounted from clients/cpp, and so is clients/python,
+    # and transitively clients/python/third-party/cpp
     git_cmd = "git submodule update --init"
     run(git_cmd, shell=True, check=True, cwd=checkout_path)
+    git_cmd = "git submodule update --init ./third-party/cpp"
+    run(git_cmd, shell=True, check=True, cwd=join(checkout_path, "clients", "python"))
 
     faasm_ver = _check_version_mismatch(checkout_path)
 
@@ -123,3 +126,5 @@ def generate_ini_file(backend, out_file, **kwargs):
 
     with open(out_file, "r") as fh:
         print(fh.read())
+
+    return abspath(out_file)
