@@ -173,7 +173,10 @@ def populate_host_sysroot(faasm_checkout, clean=False):
     dirs_to_copy = {
         "FAASM_CLI_IMAGE": ["runtime_root"],
         "CPP_CLI_IMAGE": ["llvm-sysroot", "native", "toolchain"],
-        "PYTHON_CLI_IMAGE": ["python3.8"],
+        "PYTHON_CLI_IMAGE": [
+            "python3.8",
+            join("llvm-sysroot", "lib", "wasm32-wasi", "libpython3.8.a"),
+        ],
     }
 
     # TODO: should we make this variable configurable?
@@ -195,22 +198,24 @@ def populate_host_sysroot(faasm_checkout, clean=False):
         ctr_path = join("/usr/local/faasm", dir_path)
         host_path = join(host_sysroot_path, dir_path)
 
-        # Start a temporary ctr to copy from
+        # Start a temporary ctr to copy from (capture output to silence
+        # verbose logging)
         tmp_ctr = "cp_sysroot_ctr"
         run_cmd = "docker run -d --name {} {}".format(tmp_ctr, image_tag)
-        run(run_cmd, shell=True, check=True)
+        run(run_cmd, shell=True, capture_output=True)
 
         # Do the actual copy
         try:
-            print("Populating {} from {}:{}".format(host_path, ctr_path, image_tag))
+            print("Populating {} from {}:{}".format(host_path, image_tag, ctr_path))
             cp_cmd = "docker cp {}:{} {}".format(tmp_ctr, ctr_path, host_path)
             run(cp_cmd, shell=True, check=True)
         except Exception as e:
             print("Caught exception copying: {}".format(e))
 
-        # Delete the tmp container unconditionally
+        # Delete the tmp container unconditionally (capture output to silence
+        # verbose logging)
         del_cmd = "docker rm -f {}".format(tmp_ctr)
-        run(del_cmd, shell=True, check=True)
+        run(del_cmd, shell=True, capture_output=True)
 
     # Get the docker image tags from the .env file in Faasm's source checkout
     env_file_path = join(faasm_checkout, ".env")
