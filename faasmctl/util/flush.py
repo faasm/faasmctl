@@ -2,6 +2,7 @@ from faasmctl.util.config import (
     get_faasm_ini_file,
     get_faasm_planner_host_port,
 )
+from faasmctl.util.docker import in_docker
 from faasmctl.util.planner import prepare_planner_msg
 from requests import post
 
@@ -10,7 +11,7 @@ def do_flush(msg, ini_file):
     if not ini_file:
         ini_file = get_faasm_ini_file()
 
-    host, port = get_faasm_planner_host_port(ini_file)
+    host, port = get_faasm_planner_host_port(ini_file, in_docker())
     url = "http://{}:{}".format(host, port)
 
     response = post(url, data=msg, timeout=None)
