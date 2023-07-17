@@ -92,7 +92,6 @@ def k8s(ctx, workers=2, context=None, ini_file=None):
     faasm_checkout, faasm_ver = fetch_faasm_code()
 
     if not context:
-        # TODO: not hardcoded, constant
         context = DEFAULT_KUBECONFIG_PATH
     else:
         context = abspath(context)
