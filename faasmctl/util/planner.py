@@ -1,3 +1,4 @@
+from faasmctl.util.config import get_faasm_planner_host_port
 from faasmctl.util.gen_proto.planner_pb2 import HttpMessage
 from google.protobuf.json_format import MessageToJson
 from requests import post
@@ -39,11 +40,12 @@ def prepare_planner_msg(msg_type, msg_body=None):
 # ----------
 
 
-def reset(host, port):
+def reset():
     """
     Reset the planner with an HTTP request. Reset clears the available hosts,
     and the scheduling state
     """
+    host, port = get_faasm_planner_host_port()
     url = "http://{}:{}".format(host, port)
 
     planner_msg = prepare_planner_msg("RESET")
