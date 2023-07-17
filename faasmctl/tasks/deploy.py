@@ -4,6 +4,7 @@ from faasmctl.util.compose import (
     run_compose_cmd,
 )
 from faasmctl.util.deploy import fetch_faasm_code
+from faasmctl.util.k8s import DEFAULT_KUBECONFIG_PATH, deploy_k8s_cluster
 from invoke import task
 from os.path import abspath
 
@@ -71,3 +72,28 @@ def dist_tests(ctx, mount_source=None, ini_file=None):
 
     # Second, start the dist-test-server
     run_compose_cmd(out_ini_file, "up -d dist-test-server")
+
+
+@task
+def k8s(ctx, workers=2, context=None, ini_file=None):
+    """
+    Deploy a Faasm cluster on k8s
+
+    Parameters:
+    - workers (int): number of workers to deploy
+    - context (str): path to the k8s config to use (defaults to ~/.kube/config)
+    - ini_file (str): path to the ini_file to generate (if selected)
+
+    Returns:
+    - (str): path to the generated ini_file
+    """
+    # First, check-out the Faasm source if necessary (we need it for the k8s
+    # deployment files, eventually we could publish them as helm charts)
+    faasm_checkout, faasm_ver = fetch_faasm_code()
+
+    if not context:
+        context = DEFAULT_KUBECONFIG_PATH
+    else:
+        context = abspath(context)
+
+    return deploy_k8s_cluster(context, faasm_checkout, workers, ini_file)

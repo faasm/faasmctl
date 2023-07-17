@@ -93,6 +93,17 @@ def generate_ini_file(backend, out_file, **kwargs):
         planner_port = "8080"
         worker_names = []
         worker_ips = []
+    elif backend == "k8s":
+        working_dir = kwargs["cwd"]
+        k8s_config = kwargs["k8s_config"]
+        k8s_namespace = kwargs["k8s_namespace"]
+
+        upload_ip = kwargs["upload_ip"]
+        upload_port = kwargs["upload_port"]
+        planner_ip = kwargs["planner_ip"]
+        planner_port = kwargs["planner_port"]
+        worker_names = kwargs["worker_names"]
+        worker_ips = kwargs["worker_ips"]
     else:
         raise RuntimeError("Backend {} not supported!".format(backend))
 
@@ -107,11 +118,15 @@ def generate_ini_file(backend, out_file, **kwargs):
         fh.write("# Auto-generated at {}\n".format(datetime.now()))
 
         fh.write("backend = {}\n".format(backend))
+        fh.write("working_dir = {}\n".format(working_dir))
         if backend == "compose":
-            fh.write("working_dir = {}\n".format(working_dir))
             fh.write("mount_source = {}\n".format(kwargs["mount_source"]))
+        elif backend == "k8s":
+            fh.write("k8s_config = {}\n".format(k8s_config))
         if backend == "compose":
             fh.write("cluster_name = {}\n".format(cluster_name))
+        elif backend == "k8s":
+            fh.write("k8s_namespace = {}\n".format(k8s_namespace))
         fh.write("upload_host = {}\n".format(upload_ip))
         if backend == "compose":
             fh.write("upload_host_in_docker = upload\n")
