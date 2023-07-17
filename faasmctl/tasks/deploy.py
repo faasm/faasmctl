@@ -4,7 +4,7 @@ from faasmctl.util.compose import (
     run_compose_cmd,
 )
 from faasmctl.util.deploy import fetch_faasm_code
-from faasmctl.util.k8s import deploy_k8s_cluster
+from faasmctl.util.k8s import DEFAULT_KUBECONFIG_PATH, deploy_k8s_cluster
 from invoke import task
 from os.path import abspath
 
@@ -93,6 +93,8 @@ def k8s(ctx, workers=2, context=None, ini_file=None):
 
     if not context:
         # TODO: not hardcoded, constant
-        context = "~/.kube/config"
+        context = DEFAULT_KUBECONFIG_PATH
+    else:
+        context = abspath(context)
 
     return deploy_k8s_cluster(context, faasm_checkout, workers, ini_file)

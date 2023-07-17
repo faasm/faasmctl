@@ -1,12 +1,14 @@
 from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from os import environ, listdir
-from os.path import join
+from os.path import expanduser, join
 from subprocess import run
 from time import sleep
 
+DEFAULT_KUBECONFIG_PATH = join(expanduser("~"), ".kube", "config")
 
-def run_k8s_cmd(k8s_config, namespace, cmd, capture_out=False):
+
+def run_k8s_cmd(k8s_config, namespace, cmd, capture_output=False):
     k8s_cmd = [
         "kubectl",
         "--kubeconfig {}".format(k8s_config),
@@ -15,8 +17,8 @@ def run_k8s_cmd(k8s_config, namespace, cmd, capture_out=False):
     ]
     k8s_cmd = " ".join(k8s_cmd)
 
-    if capture_out:
-        return run(k8s_cmd, shell=True, capture_stdout=True).stdout.decode("utf-8")
+    if capture_output:
+        return run(k8s_cmd, shell=True, capture_output=True).stdout.decode("utf-8")
 
     run(k8s_cmd, shell=True, check=True)
 
@@ -38,6 +40,8 @@ def get_k8s_env_vars(k8s_context, faasm_checkout, workers):
     # Whitelist env. variables that we recognise
     if "WASM_VM" in environ:
         env["FAASM_WASM_VM"] = environ["WASM_VM"]
+    else:
+        env["FAASM_WASM_VM"] = "wamr"
 
     return env
 
@@ -144,15 +148,15 @@ def deploy_faasm_services(env):
         env["K8S_NAMESPACE"],
         "scale deployment/faasm-worker --replicas={}".format(env["FAASM_NUM_WORKERS"]),
     )
-    wait_for_faasm_pods("run=faasm-worker")
+    wait_for_faasm_pods(env, "run=faasm-worker")
 
     # ----------
     # Wait for the LBs to be assigned ingress IPs
     # ----------
 
-    wait_for_faasm_lb("worker-lb")
-    wait_for_faasm_lb("planner-lb")
-    wait_for_faasm_lb("upload-lb")
+    wait_for_faasm_lb(env, "worker-lb")
+    wait_for_faasm_lb(env, "planner-lb")
+    wait_for_faasm_lb(env, "upload-lb")
 
 
 def get_faasm_worker_pods(env, label):
