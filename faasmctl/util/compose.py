@@ -179,7 +179,7 @@ def populate_host_sysroot(faasm_checkout, clean=False):
             # for the python functions. Overwriting all the sysroot with the
             # one tracked in the CPython image is unneccessary
             join("llvm-sysroot", "lib", "wasm32-wasi", "libpython3.8.a"),
-            join("llvm-sysroot", "lib", "include", "python3.8"),
+            join("llvm-sysroot", "include", "python3.8"),
         ],
     }
 
