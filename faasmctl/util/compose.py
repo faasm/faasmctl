@@ -1,5 +1,6 @@
 from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
+from faasmctl.util.network import get_next_bindable_port
 from faasmctl.util.random import generate_gid
 from os import environ, makedirs
 from os.path import exists, isfile, join
@@ -27,6 +28,18 @@ def get_compose_env_vars(faasm_checkout, mount_source):
         env["FAASM_CONAN_MOUNT"] = "/host_dev/conan"
         env["FAASM_LOCAL_MOUNT"] = "/host_dev/faasm-local"
         env["PLANNER_BUILD_MOUNT"] = "/build/faabric/static"
+
+    # Set network env. variables
+    env["PLANNER_DOCKER_PORT"] = "8080"
+    env["PLANNER_HOST_PORT"] = str(
+        get_next_bindable_port(int(env["PLANNER_DOCKER_PORT"]))
+    )
+    env["MINIO_DOCKER_PORT"] = "9000"
+    env["MINIO_HOST_PORT"] = str(get_next_bindable_port(int(env["MINIO_DOCKER_PORT"])))
+    env["UPLOAD_DOCKER_PORT"] = "8002"
+    env["UPLOAD_HOST_PORT"] = str(
+        get_next_bindable_port(int(env["UPLOAD_DOCKER_PORT"]))
+    )
 
     # Get Faasm version
     with open(join(faasm_checkout, "VERSION"), "r") as fh:
@@ -86,6 +99,10 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
         name=env["COMPOSE_PROJECT_NAME"],
         cwd=faasm_checkout,
         mount_source=mount_source,
+        planner_host_port=env["PLANNER_HOST_PORT"],
+        planner_docker_port=env["PLANNER_DOCKER_PORT"],
+        upload_host_port=env["UPLOAD_HOST_PORT"],
+        upload_docker_port=env["UPLOAD_DOCKER_PORT"],
     )
 
 
