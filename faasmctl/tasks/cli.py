@@ -7,6 +7,7 @@ from faasmctl.util.config import (
 from faasmctl.util.docker import get_docker_tag
 from invoke import task
 from os.path import abspath
+from subprocess import run
 
 
 def do_run_cmd(cli, cmd, ini_file):
@@ -50,10 +51,12 @@ def do_run_cmd(cli, cmd, ini_file):
         # use a standalone container to execute the command that we remove
         # immediately after (without mounting any files)
         ini_file_ctr_path = "/tmp/faasm.ini"
+        work_dir = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
+
         if cli == "cpp":
-            image_tag = get_docker_tag("CPP_CLI_IMAGE")
+            image_tag = get_docker_tag(work_dir, "CPP_CLI_IMAGE")
         elif cli == "python":
-            image_tag = get_docker_tag("PYTHON_CLI_IMAGE")
+            image_tag = get_docker_tag(work_dir, "PYTHON_CLI_IMAGE")
         else:
             raise RuntimeError("Can't call cli.faasm on a `k8s` cluster!")
 
@@ -66,6 +69,8 @@ def do_run_cmd(cli, cmd, ini_file):
             "bash" if not cmd else cmd,
         ]
         docker_cmd = " ".join(docker_cmd)
+
+        run(docker_cmd, shell=True)
 
     else:
         raise RuntimeError("Unrecognised backend: {}".format(backend))
