@@ -88,9 +88,9 @@ def generate_ini_file(backend, out_file, **kwargs):
         working_dir = kwargs["cwd"]
 
         upload_ip = LOCALHOST_IP
-        upload_port = "8002"
+        upload_port = kwargs["upload_host_port"]
         planner_ip = LOCALHOST_IP
-        planner_port = "8080"
+        planner_port = kwargs["planner_host_port"]
         worker_names = []
         worker_ips = []
     elif backend == "k8s":
@@ -131,10 +131,18 @@ def generate_ini_file(backend, out_file, **kwargs):
         if backend == "compose":
             fh.write("upload_host_in_docker = upload\n")
         fh.write("upload_port = {}\n".format(upload_port))
+        if backend == "compose":
+            fh.write(
+                "upload_port_in_docker = {}\n".format(kwargs["upload_docker_port"])
+            )
         fh.write("planner_host = {}\n".format(planner_ip))
         if backend == "compose":
             fh.write("planner_host_in_docker = planner\n")
         fh.write("planner_port = {}\n".format(planner_port))
+        if backend == "compose":
+            fh.write(
+                "planner_port_in_docker = {}\n".format(kwargs["planner_docker_port"])
+            )
         if backend == "k8s":
             fh.write("worker_names = {}\n".format(",".join(worker_names)))
             fh.write("worker_ips = {}\n".format(",".join(worker_ips)))
