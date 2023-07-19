@@ -91,8 +91,8 @@ def generate_ini_file(backend, out_file, **kwargs):
         upload_port = kwargs["upload_host_port"]
         planner_ip = LOCALHOST_IP
         planner_port = kwargs["planner_host_port"]
-        worker_names = []
-        worker_ips = []
+        worker_names = kwargs["worker_names"]
+        worker_ips = kwargs["worker_ips"]
     elif backend == "k8s":
         working_dir = kwargs["cwd"]
         k8s_config = kwargs["k8s_config"]
