@@ -2,6 +2,7 @@ from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.network import get_next_bindable_port
 from faasmctl.util.random import generate_gid
+from json import loads as json_loads
 from os import environ, makedirs
 from os.path import exists, isfile, join
 from shutil import rmtree
@@ -103,6 +104,8 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
         planner_docker_port=env["PLANNER_DOCKER_PORT"],
         upload_host_port=env["UPLOAD_HOST_PORT"],
         upload_docker_port=env["UPLOAD_DOCKER_PORT"],
+        worker_names=get_container_names_from_compose(),
+        worker_ips=get_container_ips_from_compose(),
     )
 
 
@@ -124,7 +127,7 @@ def delete_compose_cluster(ini_file):
     run(compose_cmd, shell=True, check=True, cwd=working_dir)
 
 
-def run_compose_cmd(ini_file, cmd):
+def run_compose_cmd(ini_file, cmd, capture_out=False):
     cluster_name = get_faasm_ini_value(ini_file, "Faasm", "cluster_name")
     work_dir = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
     mount_source = get_faasm_ini_value(ini_file, "Faasm", "mount_source")
@@ -138,6 +141,19 @@ def run_compose_cmd(ini_file, cmd):
     compose_cmd = " ".join(compose_cmd)
 
     compose_env = get_compose_env_vars(work_dir, mount_source)
+    if capture_out:
+        return (
+            run(
+                compose_cmd,
+                shell=True,
+                capture_out=True,
+                cwd=work_dir,
+                env=compose_env,
+            )
+            .stdout.decode("utf-8")
+            .strip()
+        )
+
     run(
         compose_cmd,
         shell=True,
@@ -253,3 +269,33 @@ def populate_host_sysroot(faasm_checkout, clean=False):
 
         for dir_path in dirs_to_copy[image]:
             copy_from_ctr_to_host(image_tag, dir_path)
+
+
+def get_container_names_from_compose(ini_file):
+    json_str = run_compose_cmd(ini_file, "ps --format json", capture_out=True)
+    json_dict = json_loads(json_str)
+    return [c["Name"] for c in json_dict if c["Service"] == "worker"]
+
+
+def get_container_ips_from_compose(ini_file):
+    container_ips = []
+    container_names = get_container_names_from_compose(ini_file)
+    for c in container_names:
+        ip_cmd = [
+            "docker inspect -f",
+            "'{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'",
+            c,
+        ]
+        ip_cmd = " ".join(ip_cmd)
+        c_ip = (
+            run(
+                ip_cmd,
+                shell=True,
+                check=True,
+                capture_output=True,
+            )
+            .stdout.decode("utf-8")
+            .strip()
+        )
+        container_ips.append(c_ip)
+    return container_ips

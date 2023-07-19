@@ -44,3 +44,23 @@ def get_faasm_planner_host_port(ini_file, in_docker=False):
         port = get_faasm_ini_value(ini_file, "Faasm", "planner_port")
 
     return host, port
+
+
+def get_faasm_worker_names(ini_file=None):
+    if not ini_file:
+        ini_file = get_faasm_ini_file()
+
+    names = get_faasm_ini_value(ini_file, "Faasm", "worker_names")
+    names = [p.strip() for p in names.split(",") if p.strip()]
+
+    return names
+
+
+def get_faasm_worker_ips(ini_file=None):
+    if not ini_file:
+        ini_file = get_faasm_ini_file()
+
+    ips = get_faasm_ini_value(ini_file, "Faasm", "worker_ips")
+    ips = [p.strip() for p in ips.split(",") if p.strip()]
+
+    return ips
