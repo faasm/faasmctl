@@ -35,5 +35,4 @@ def get_next_bindable_port(start_port):
         except socket_error:
             bind_port += 1
 
-    print("Picking port: {}".format(bind_port))
     return bind_port
