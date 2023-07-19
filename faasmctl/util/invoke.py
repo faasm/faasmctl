@@ -83,7 +83,10 @@ def invoke_and_await(url, json_msg, expected_num_messages):
             # In this case, by default, the planner endpoint fails. But it is
             # not an error (it will be in the future)
             if response.text == "App not registered in results":
-                print("WARNING: app not registered in results")
+                # FIXME: we will have to emit a warning eventually, for now
+                # we pass
+                # print("WARNING: app not registered in results")
+                pass
             else:
                 print(
                     "POST request failed (code: {}): {}".format(
