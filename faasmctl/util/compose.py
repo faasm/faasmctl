@@ -104,8 +104,12 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
         planner_docker_port=env["PLANNER_DOCKER_PORT"],
         upload_host_port=env["UPLOAD_HOST_PORT"],
         upload_docker_port=env["UPLOAD_DOCKER_PORT"],
-        worker_names=get_container_names_from_compose(),
-        worker_ips=get_container_ips_from_compose(),
+        worker_names=get_container_names_from_compose(
+            faasm_checkout, env["COMPOSE_PROJECT_NAME"]
+        ),
+        worker_ips=get_container_ips_from_compose(
+            faasm_checkout, env["COMPOSE_PROJECT_NAME"]
+        ),
     )
 
 
@@ -146,7 +150,7 @@ def run_compose_cmd(ini_file, cmd, capture_out=False):
             run(
                 compose_cmd,
                 shell=True,
-                capture_out=True,
+                capture_output=True,
                 cwd=work_dir,
                 env=compose_env,
             )
@@ -271,15 +275,27 @@ def populate_host_sysroot(faasm_checkout, clean=False):
             copy_from_ctr_to_host(image_tag, dir_path)
 
 
-def get_container_names_from_compose(ini_file):
-    json_str = run_compose_cmd(ini_file, "ps --format json", capture_out=True)
+def get_container_names_from_compose(faasm_checkout, cluster_name):
+    # Unfortunately, we can't use run_compose_cmd here yet because we need the
+    # ini_file for that, but we need this method to generate it
+    compose_cmd = [
+        "docker compose",
+        "-p {}".format(cluster_name),
+        "ps --format json",
+    ]
+    compose_cmd = " ".join(compose_cmd)
+    json_str = (
+        run(compose_cmd, shell=True, capture_output=True, cwd=faasm_checkout)
+        .stdout.decode("utf-8")
+        .strip()
+    )
     json_dict = json_loads(json_str)
     return [c["Name"] for c in json_dict if c["Service"] == "worker"]
 
 
-def get_container_ips_from_compose(ini_file):
+def get_container_ips_from_compose(faasm_checkout, cluster_name):
     container_ips = []
-    container_names = get_container_names_from_compose(ini_file)
+    container_names = get_container_names_from_compose(faasm_checkout, cluster_name)
     for c in container_names:
         ip_cmd = [
             "docker inspect -f",

@@ -143,9 +143,8 @@ def generate_ini_file(backend, out_file, **kwargs):
             fh.write(
                 "planner_port_in_docker = {}\n".format(kwargs["planner_docker_port"])
             )
-        if backend == "k8s":
-            fh.write("worker_names = {}\n".format(",".join(worker_names)))
-            fh.write("worker_ips = {}\n".format(",".join(worker_ips)))
+        fh.write("worker_names = {}\n".format(",".join(worker_names)))
+        fh.write("worker_ips = {}\n".format(",".join(worker_ips)))
 
     with open(out_file, "r") as fh:
         print(fh.read())
