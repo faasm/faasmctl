@@ -1,5 +1,6 @@
 from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
+from faasmctl.util.docker import get_docker_tag
 from faasmctl.util.network import get_next_bindable_port
 from faasmctl.util.random import generate_gid
 from json import loads as json_loads
@@ -258,18 +259,8 @@ def populate_host_sysroot(faasm_checkout, clean=False):
         del_cmd = "docker rm -f {}".format(tmp_ctr)
         run(del_cmd, shell=True, capture_output=True)
 
-    # Get the docker image tags from the .env file in Faasm's source checkout
-    env_file_path = join(faasm_checkout, ".env")
-    with open(env_file_path, "r") as fh:
-        env_file = fh.readlines()
-        env_file = [line.strip() for line in env_file]
-
-    # Get the actual image tag by finding the right line in the file. We are
-    # unncesserily iterating over the files three times, but we don't care
     for image in dirs_to_copy:
-        image_tag = [line.split("=")[1] for line in env_file if line.startswith(image)]
-        assert len(image_tag) == 1
-        image_tag = image_tag[0]
+        image_tag = get_docker_tag(faasm_checkout, image)
 
         for dir_path in dirs_to_copy[image]:
             copy_from_ctr_to_host(image_tag, dir_path)

@@ -25,7 +25,8 @@ def get_faasm_ini_value(ini_file, section, key):
 
 
 def get_faasm_upload_host_port(ini_file, in_docker=False):
-    if in_docker:
+    backend = get_faasm_ini_value(ini_file, "Faasm", "backend")
+    if backend == "compose" and in_docker:
         host = get_faasm_ini_value(ini_file, "Faasm", "upload_host_in_docker")
         port = get_faasm_ini_value(ini_file, "Faasm", "upload_port_in_docker")
     else:
@@ -36,7 +37,8 @@ def get_faasm_upload_host_port(ini_file, in_docker=False):
 
 
 def get_faasm_planner_host_port(ini_file, in_docker=False):
-    if in_docker:
+    backend = get_faasm_ini_value(ini_file, "Faasm", "backend")
+    if backend == "compose" and in_docker:
         host = get_faasm_ini_value(ini_file, "Faasm", "planner_host_in_docker")
         port = get_faasm_ini_value(ini_file, "Faasm", "planner_port_in_docker")
     else:
