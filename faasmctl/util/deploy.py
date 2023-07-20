@@ -1,7 +1,7 @@
 from datetime import datetime
 from faasmctl.util.env import FAASM_SOURCE_DIR
+from faasmctl.util.faasm import get_version as get_faasm_version
 from faasmctl.util.network import LOCALHOST_IP
-from faasmctl.util.version import FAASM_VERSION
 from os import makedirs
 from os.path import abspath, exists, join
 from shutil import rmtree
@@ -14,11 +14,11 @@ def _check_version_mismatch(checkout_path):
     with open(join(checkout_path, "VERSION"), "r") as fh:
         faasm_ver = fh.read()
         faasm_ver = faasm_ver.strip()
-    if faasm_ver != FAASM_VERSION:
+    if faasm_ver != get_faasm_version():
         print(
             "WARNING: mismatch between the checked-out version and"
             "faasmctl's pinned faasm version ({} != {})".format(
-                faasm_ver, FAASM_VERSION
+                faasm_ver, get_faasm_version()
             )
         )
 
@@ -29,10 +29,8 @@ def fetch_faasm_code(faasm_source=None, force=False):
     """
     Check-out the Faasm tag
     """
-    # Eventually we may want to support overwriting FAASM_SOURCE_DIR and
-    # FAASM_VERSION
     checkout_path = (
-        faasm_source if faasm_source else join(FAASM_SOURCE_DIR, FAASM_VERSION)
+        faasm_source if faasm_source else join(FAASM_SOURCE_DIR, get_faasm_version())
     )
     must_checkout = force or not exists(checkout_path)
 
@@ -44,10 +42,10 @@ def fetch_faasm_code(faasm_source=None, force=False):
     rmtree(checkout_path, ignore_errors=True)
     makedirs(checkout_path, exist_ok=True)
 
-    print("Checking out Faasm v{} to {}".format(FAASM_VERSION, checkout_path))
+    print("Checking out Faasm v{} to {}".format(get_faasm_version(), checkout_path))
     git_cmd = [
         "git clone",
-        "--branch v{}".format(FAASM_VERSION),
+        "--branch v{}".format(get_faasm_version()),
         "https://github.com/faasm/faasm",
         checkout_path,
     ]
