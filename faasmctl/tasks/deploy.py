@@ -6,6 +6,7 @@ from faasmctl.util.compose import (
 from faasmctl.util.deploy import fetch_faasm_code
 from faasmctl.util.k8s import DEFAULT_KUBECONFIG_PATH, deploy_k8s_cluster
 from invoke import task
+from os import environ
 from os.path import abspath
 
 
@@ -91,9 +92,11 @@ def k8s(ctx, workers=2, context=None, ini_file=None):
     # deployment files, eventually we could publish them as helm charts)
     faasm_checkout, faasm_ver = fetch_faasm_code()
 
-    if not context:
-        context = DEFAULT_KUBECONFIG_PATH
-    else:
+    if context:
         context = abspath(context)
+    elif "KUBECONFIG" in environ:
+        context = abspath(environ["KUBECONFIG"])
+    else:
+        context = DEFAULT_KUBECONFIG_PATH
 
     return deploy_k8s_cluster(context, faasm_checkout, workers, ini_file)
