@@ -60,6 +60,8 @@ def get_compose_env_vars(faasm_checkout, mount_source):
             env["WASM_VM"] = "sgx"
             env["FAASM_CLI_IMAGE"] = "faasm/cli-sgx:{}".format(faasm_ver)
             env["FAASM_WORKER_IMAGE"] = "faasm/worker-sgx:{}".format(faasm_ver)
+        else:
+            env["WASM_VM"] = wasm_vm
 
     if "FAASM_CLI_IMAGE" in environ:
         env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
