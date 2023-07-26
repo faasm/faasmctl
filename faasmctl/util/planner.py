@@ -14,8 +14,8 @@ def prepare_planner_msg(msg_type, msg_body=None):
     http_message = HttpMessage()
     if msg_type == "RESET":
         http_message.type = HttpMessage.Type.RESET
-    elif msg_type == "FLUSH_HOSTS":
-        http_message.type = HttpMessage.Type.FLUSH_HOSTS
+    elif msg_type == "FLUSH_AVAILABLE_HOSTS":
+        http_message.type = HttpMessage.Type.FLUSH_AVAILABLE_HOSTS
     elif msg_type == "FLUSH_EXECUTORS":
         http_message.type = HttpMessage.Type.FLUSH_EXECUTORS
     elif msg_type == "GET_CONFIG":
