@@ -8,7 +8,7 @@ from subprocess import run
 # able to run this file in standalone mode, as if the proto files are not
 # generated, some imports in `faasmctl` will fail
 GEN_PROTO_DIR = "./faasmctl/util/gen_proto"
-FAASM_CLI_IMAGE = "faasm.azurecr.io/cli:0.9.11"
+FAASM_CLI_IMAGE = "faasm.azurecr.io/cli:0.10.2"
 
 PROTO_FILES = [
     "faabric_pb2.py",
