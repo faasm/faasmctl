@@ -28,7 +28,7 @@ def do_flush(msg, ini_file):
 
 
 def flush_hosts(ini_file=None):
-    msg = prepare_planner_msg("FLUSH_HOSTS")
+    msg = prepare_planner_msg("FLUSH_AVAILABLE_HOSTS")
     do_flush(msg, ini_file)
 
 
