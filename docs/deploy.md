@@ -1,7 +1,7 @@
 ## Deploy a Faasm cluster
 
 Faasm supports being deployed on a [docker compose](#docker-compose) and on a
-[k8s](#k8s) cluster.
+[k8s](#kubernetes) cluster.
 
 ### INI Files
 
@@ -21,6 +21,15 @@ export FAASM_INI_FILE=./faasm.ini
 # Then we do not need an ini file
 faasmctl deploy.delete
 ```
+
+### Environment Variables
+
+In addition to the `FAASM_INI_FILE` environment variable, there are other
+environment variables that you can set before starting a Faasm cluster to
+influence the cluster creation process:
+* `WASM_VM=[wavm,wamr,sgx,sgx-sim]`: set the WASM VM of choice.
+* `FAASM_VERSION`: set the Faasm version to use (i.e. [version tag](
+https://github.com/faasm/faasm/tags).
 
 ### Docker Compose
 
@@ -47,11 +56,28 @@ internally by `faasmctl`.
 > WARNING: The `--clean` flag and the `--dev` flag are incompatible, as it
 > could lead to accidentally removing user code.
 
-In addition, you may set the WASM VM as an environment variable too. The
-supported values are `WASM_VM=[wavm,wamr,sgx,sgx-sim]`.
+### Kubernetes
 
-Lastly, in order to delete a cluster, you may run:
+To deploy Faasm on a Kubernetes cluster, you will have to first start a K8s
+cluster yourself, and keep track of the generated `KUBECONFIG` file. For
+example, for most of Faasm deployments we use Azure's Kubernetes Service.
+You may see find the scripts to deploy such a cluster [here](
+https://github.com/faasm/experiment-base/tree/main/tasks/cluster.py).
+
+Then, you may run:
 
 ```bash
-faasmctl deploy.delete [--ini-file=<path_to_ini_file>]
+faasmctl deploy.k8s \
+  --workers <num_workers> \
+  --context <path to KUBECONFIG file> \
+  --ini-file <out path for INI file>
 ```
+
+if the `--context` flag is not set, `faasmctl` will check for the `KUBECONFIG`
+environment variable, and if that is not set neither will look for a config
+file in `~/.kube/config`.
+
+### Managing a running cluster
+
+For further steps on managing a running cluster, check [this page](
+./managing_cluster.md).
