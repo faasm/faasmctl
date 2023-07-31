@@ -11,7 +11,22 @@ from subprocess import run
 from time import sleep
 
 
-def get_compose_env_vars(faasm_checkout, mount_source):
+def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
+    """
+    Get the env. variables to call `docker compose` with
+
+    Faasm's docker compose file requires a number of envrionment variables to
+    be set. Starting different services requires different env. variables, and
+    the process is very error prone, so we automate it here.
+
+    Arguments:
+    - faasm_checkout (str): path to Faasm's source tree
+    - mount_source (bool): whether we are mounting the source and binaries
+    - ini_file (str): inidicate wether an ini_file has already been populated
+
+    Returns:
+    - A dictionary with the necessary env. variables
+    """
     env = {}
     if mount_source:
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
@@ -31,17 +46,29 @@ def get_compose_env_vars(faasm_checkout, mount_source):
         env["FAASM_LOCAL_MOUNT"] = "/host_dev/faasm-local"
         env["PLANNER_BUILD_MOUNT"] = "/build/faabric/static"
 
-    # Set network env. variables
+    # Set network env. variables. Depending on wether the cluster has already
+    # been initialised or not, we need to work out the next bindable port or
+    # not
     env["PLANNER_DOCKER_PORT"] = "8080"
-    env["PLANNER_HOST_PORT"] = str(
-        get_next_bindable_port(int(env["PLANNER_DOCKER_PORT"]))
-    )
+    if ini_file:
+        env["PLANNER_HOST_PORT"] = get_faasm_ini_value(ini_file, "Faasm", "planner_port")
+    else:
+        env["PLANNER_HOST_PORT"] = str(
+            get_next_bindable_port(int(env["PLANNER_DOCKER_PORT"]))
+        )
     env["MINIO_DOCKER_PORT"] = "9000"
-    env["MINIO_HOST_PORT"] = str(get_next_bindable_port(int(env["MINIO_DOCKER_PORT"])))
+    # The minio port we only need to set once at the begining
+    if ini_file:
+        env["MINIO_HOST_PORT"] = get_faasm_ini_value(ini_file, "Faasm", "minio_port")
+    else:
+        env["MINIO_HOST_PORT"] = str(get_next_bindable_port(int(env["MINIO_DOCKER_PORT"])))
     env["UPLOAD_DOCKER_PORT"] = "8002"
-    env["UPLOAD_HOST_PORT"] = str(
-        get_next_bindable_port(int(env["UPLOAD_DOCKER_PORT"]))
-    )
+    if ini_file:
+        env["UPLOAD_HOST_PORT"] = get_faasm_ini_value(ini_file, "Faasm", "upload_port")
+    else:
+        env["UPLOAD_HOST_PORT"] = str(
+            get_next_bindable_port(int(env["UPLOAD_DOCKER_PORT"]))
+        )
 
     # Get Faasm version
     with open(join(faasm_checkout, "VERSION"), "r") as fh:
@@ -105,6 +132,8 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
         mount_source=mount_source,
         planner_host_port=env["PLANNER_HOST_PORT"],
         planner_docker_port=env["PLANNER_DOCKER_PORT"],
+        minio_host_port=env["MINIO_HOST_PORT"],
+        minio_docker_port=env["MINIO_DOCKER_PORT"],
         upload_host_port=env["UPLOAD_HOST_PORT"],
         upload_docker_port=env["UPLOAD_DOCKER_PORT"],
         worker_names=get_container_names_from_compose(
@@ -147,7 +176,7 @@ def run_compose_cmd(ini_file, cmd, capture_out=False):
     ]
     compose_cmd = " ".join(compose_cmd)
 
-    compose_env = get_compose_env_vars(work_dir, mount_source)
+    compose_env = get_compose_env_vars(work_dir, mount_source, ini_file)
     if capture_out:
         return (
             run(
