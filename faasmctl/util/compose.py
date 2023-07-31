@@ -51,7 +51,9 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     # not
     env["PLANNER_DOCKER_PORT"] = "8080"
     if ini_file:
-        env["PLANNER_HOST_PORT"] = get_faasm_ini_value(ini_file, "Faasm", "planner_port")
+        env["PLANNER_HOST_PORT"] = get_faasm_ini_value(
+            ini_file, "Faasm", "planner_port"
+        )
     else:
         env["PLANNER_HOST_PORT"] = str(
             get_next_bindable_port(int(env["PLANNER_DOCKER_PORT"]))
@@ -61,7 +63,9 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     if ini_file:
         env["MINIO_HOST_PORT"] = get_faasm_ini_value(ini_file, "Faasm", "minio_port")
     else:
-        env["MINIO_HOST_PORT"] = str(get_next_bindable_port(int(env["MINIO_DOCKER_PORT"])))
+        env["MINIO_HOST_PORT"] = str(
+            get_next_bindable_port(int(env["MINIO_DOCKER_PORT"]))
+        )
     env["UPLOAD_DOCKER_PORT"] = "8002"
     if ini_file:
         env["UPLOAD_HOST_PORT"] = get_faasm_ini_value(ini_file, "Faasm", "upload_port")

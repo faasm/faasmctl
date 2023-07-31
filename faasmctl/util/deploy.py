@@ -138,9 +138,7 @@ def generate_ini_file(backend, out_file, **kwargs):
             fh.write("planner_host_in_docker = planner\n")
         if backend == "compose":
             fh.write("minio_port = {}\n".format(kwargs["minio_host_port"]))
-            fh.write(
-                "minio_port_in_docker = {}\n".format(kwargs["minio_docker_port"])
-            )
+            fh.write("minio_port_in_docker = {}\n".format(kwargs["minio_docker_port"]))
         fh.write("planner_port = {}\n".format(planner_port))
         if backend == "compose":
             fh.write(
