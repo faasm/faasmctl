@@ -17,8 +17,8 @@ def _check_version_mismatch(checkout_path):
     if faasm_ver != get_faasm_version():
         print(
             "WARNING: mismatch between the checked-out version and"
-            "faasmctl's pinned faasm version ({} != {})".format(
-                faasm_ver, get_faasm_version()
+            " faasmctl's pinned faasm version ({} != {}) using {}".format(
+                faasm_ver, get_faasm_version(), faasm_ver
             )
         )
 
@@ -136,6 +136,9 @@ def generate_ini_file(backend, out_file, **kwargs):
         fh.write("planner_host = {}\n".format(planner_ip))
         if backend == "compose":
             fh.write("planner_host_in_docker = planner\n")
+        if backend == "compose":
+            fh.write("minio_port = {}\n".format(kwargs["minio_host_port"]))
+            fh.write("minio_port_in_docker = {}\n".format(kwargs["minio_docker_port"]))
         fh.write("planner_port = {}\n".format(planner_port))
         if backend == "compose":
             fh.write(
