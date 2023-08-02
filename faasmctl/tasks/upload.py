@@ -17,6 +17,7 @@ def wasm(ctx, user, func, wasm_file, ini_file=None):
     upload_wasm(user, func, wasm_file, ini_file)
 
 
+@task()
 def file(ctx, host_path, faasm_path, ini_file=None):
     """
     Upload a file to Faasm's distributed filesystem
