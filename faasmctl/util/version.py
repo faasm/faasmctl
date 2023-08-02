@@ -1,4 +1,4 @@
-FAASMCTL_VERSION = "0.11.0"
+FAASMCTL_VERSION = "0.12.0"
 
 
 def get_version():
