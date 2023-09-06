@@ -3,6 +3,7 @@ from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.docker import get_docker_tag
 from faasmctl.util.network import get_next_bindable_port
 from faasmctl.util.random import generate_gid
+from json import JSONDecodeError
 from json import loads as json_loads
 from os import environ, makedirs
 from os.path import exists, isfile, join
@@ -315,7 +316,14 @@ def get_container_names_from_compose(faasm_checkout, cluster_name):
         .stdout.decode("utf-8")
         .strip()
     )
-    json_dict = json_loads(json_str)
+    try:
+        json_dict = json_loads(json_str)
+    except JSONDecodeError as e:
+        print(
+            "Error parsing JSON response to get container names in compose."
+            "\nCompose command: {}\nJSON String: {}".format(compose_cmd, json_str)
+        )
+        raise e
     return [c["Name"] for c in json_dict if c["Service"] == "worker"]
 
 
