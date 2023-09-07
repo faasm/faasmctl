@@ -311,19 +311,36 @@ def get_container_names_from_compose(faasm_checkout, cluster_name):
         "ps --format json",
     ]
     compose_cmd = " ".join(compose_cmd)
-    json_str = (
-        run(compose_cmd, shell=True, capture_output=True, cwd=faasm_checkout)
-        .stdout.decode("utf-8")
-        .strip()
-    )
-    try:
-        json_dict = json_loads(json_str)
-    except JSONDecodeError as e:
-        print(
-            "Error parsing JSON response to get container names in compose."
-            "\nCompose command: {}\nJSON String: {}".format(compose_cmd, json_str)
+
+    # The following command may error if we have just started the compose
+    # cluster, allow a couple of retries
+    attempt = 0
+    max_attempts = 3
+    while True:
+        json_str = (
+            run(compose_cmd, shell=True, capture_output=True, cwd=faasm_checkout)
+            .stdout.decode("utf-8")
+            .strip()
         )
-        raise e
+        try:
+            json_dict = json_loads(json_str)
+            break
+        except JSONDecodeError as e:
+            print(
+                "Error parsing JSON response to get container names in compose."
+                "\nCompose command: {}\nJSON String: {}".format(compose_cmd, json_str)
+            )
+            if attempt == max_attempts:
+                raise e
+
+        attempt += 1
+        print(
+            "Trying again in one second... (Attempt {}/{})".format(
+                attempt, max_attempts
+            )
+        )
+        sleep(1)
+
     return [c["Name"] for c in json_dict if c["Service"] == "worker"]
 
 
