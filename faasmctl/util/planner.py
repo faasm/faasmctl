@@ -42,45 +42,6 @@ def prepare_planner_msg(msg_type, msg_body=None):
     return MessageToJson(http_message, indent=None)
 
 
-def wait_for_workers(expected_num_workers):
-    """
-    Wait for a number of workers to be registered with the planner
-
-    This method polls the planner over HTTP querying for the number of
-    registered workers, and returns when the number matches a user-provided
-    value. This method is useful to wait for the planner to be ready after
-    reset.
-
-    Arguments:
-    - expected_num_workers (int): the number of workers to wait for
-    """
-    host, port = get_faasm_planner_host_port(get_faasm_ini_file())
-    url = "http://{}:{}".format(host, port)
-    planner_msg = prepare_planner_msg("GET_AVAILABLE_HOSTS")
-
-    poll_period = 2
-    while True:
-        response = post(url, data=planner_msg, timeout=None)
-        if response.status_code != 200:
-            print(
-                "Error resetting planner (code: {}): {}".format(
-                    response.status_code, response.text
-                )
-            )
-            raise RuntimeError("Error resetting planner")
-
-        available_hosts = Parse(response.text, AvailableHostsResponse())
-        if len(available_hosts.hosts) == expected_num_workers:
-            break
-
-        print(
-            "Waiting for workers to register with planner ({}/{})...".format(
-                len(available_hosts.hosts), expected_num_workers
-            )
-        )
-        sleep(poll_period)
-
-
 def reset(expected_num_workers=None):
     """
     Reset the planner with an HTTP request
@@ -111,12 +72,60 @@ def reset(expected_num_workers=None):
     if expected_num_workers:
         wait_for_workers(expected_num_workers)
 
+
 # ----------
 # Host Membership Getters/Setters
 # ----------
 
 
+def get_available_hosts():
+    """
+    Get the list of available hosts
+    """
+    host, port = get_faasm_planner_host_port(get_faasm_ini_file())
+    url = "http://{}:{}".format(host, port)
+    planner_msg = prepare_planner_msg("GET_AVAILABLE_HOSTS")
+
+    response = post(url, data=planner_msg, timeout=None)
+    if response.status_code != 200:
+        print(
+            "Error resetting planner (code: {}): {}".format(
+                response.status_code, response.text
+            )
+        )
+        raise RuntimeError("Error resetting planner")
+
+    available_hosts = Parse(response.text, AvailableHostsResponse())
+    return available_hosts
+
+
+def wait_for_workers(expected_num_workers):
+    """
+    Wait for a number of workers to be registered with the planner
+
+    This method polls the planner over HTTP querying for the number of
+    registered workers, and returns when the number matches a user-provided
+    value. This method is useful to wait for the planner to be ready after
+    reset.
+
+    Arguments:
+    - expected_num_workers (int): the number of workers to wait for
+    """
+    poll_period = 2
+    while True:
+        available_hosts = get_available_hosts()
+
+        if len(available_hosts.hosts) == expected_num_workers:
+            break
+
+        print(
+            "Waiting for workers to register with planner ({}/{})...".format(
+                len(available_hosts.hosts), expected_num_workers
+            )
+        )
+        sleep(poll_period)
+
+
 # ----------
 # Scheduling State Getters/Setters
 # ----------
-
