@@ -3,7 +3,6 @@ from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.docker import get_docker_tag
 from faasmctl.util.network import get_next_bindable_port
 from faasmctl.util.random import generate_gid
-from json import JSONDecodeError
 from json import loads as json_loads
 from os import environ, makedirs
 from os.path import exists, isfile, join
@@ -312,36 +311,16 @@ def get_container_names_from_compose(faasm_checkout, cluster_name):
     ]
     compose_cmd = " ".join(compose_cmd)
 
-    # The following command may error if we have just started the compose
-    # cluster, allow a couple of retries
-    attempt = 0
-    max_attempts = 3
-    while True:
-        json_str = (
-            run(compose_cmd, shell=True, capture_output=True, cwd=faasm_checkout)
-            .stdout.decode("utf-8")
-            .strip()
-        )
-        try:
-            json_dict = json_loads(json_str)
-            break
-        except JSONDecodeError as e:
-            print(
-                "Error parsing JSON response to get container names in compose."
-                "\nCompose command: {}\nJSON String: {}".format(compose_cmd, json_str)
-            )
-            if attempt == max_attempts:
-                raise e
+    json_str_array = (
+        run(compose_cmd, shell=True, capture_output=True, cwd=faasm_checkout)
+        .stdout.decode("utf-8")
+        .strip()
+        .split("\n")
+    )
 
-        attempt += 1
-        print(
-            "Trying again in one second... (Attempt {}/{})".format(
-                attempt, max_attempts
-            )
-        )
-        sleep(1)
+    json_array = [json_loads(json_str) for json_str in json_str_array]
 
-    return [c["Name"] for c in json_dict if c["Service"] == "worker"]
+    return [c["Name"] for c in json_array if c["Service"] == "worker"]
 
 
 def get_container_ips_from_compose(faasm_checkout, cluster_name):
