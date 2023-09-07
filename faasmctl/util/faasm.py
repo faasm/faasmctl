@@ -1,6 +1,6 @@
 from os import environ
 
-FAASM_VERSION = "0.11.0"
+FAASM_VERSION = "0.12.0"
 
 
 def get_version():

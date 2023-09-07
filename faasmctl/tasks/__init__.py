@@ -6,6 +6,7 @@ from . import deploy
 from . import flush
 from . import invoke
 from . import logs
+from . import monitor
 from . import restart
 from . import status
 from . import upload
@@ -17,6 +18,7 @@ task_ns = Collection(
     flush,
     invoke,
     logs,
+    monitor,
     restart,
     status,
     upload,
