@@ -19,12 +19,16 @@ def prepare_planner_msg(msg_type, msg_body=None):
         http_message.type = HttpMessage.Type.FLUSH_AVAILABLE_HOSTS
     elif msg_type == "FLUSH_EXECUTORS":
         http_message.type = HttpMessage.Type.FLUSH_EXECUTORS
+    elif msg_type == "FLUSH_SCHEDULING_STATE":
+        http_message.type = HttpMessage.Type.FLUSH_SCHEDULING_STATE
     elif msg_type == "GET_AVAILABLE_HOSTS":
         http_message.type = HttpMessage.Type.GET_AVAILABLE_HOSTS
     elif msg_type == "GET_CONFIG":
         http_message.type = HttpMessage.Type.GET_CONFIG
     elif msg_type == "GET_EXEC_GRAPH":
         http_message.type = HttpMessage.Type.GET_EXEC_GRAPH
+    elif msg_type == "GET_IN_FLIGHT_APPS":
+        http_message.type = HttpMessage.Type.GET_IN_FLIGHT_APPS
     elif msg_type == "EXECUTE_BATCH":
         http_message.type = HttpMessage.Type.EXECUTE_BATCH
     elif msg_type == "EXECUTE_BATCH_STATUS":
@@ -106,3 +110,13 @@ def reset(expected_num_workers=None):
 
     if expected_num_workers:
         wait_for_workers(expected_num_workers)
+
+# ----------
+# Host Membership Getters/Setters
+# ----------
+
+
+# ----------
+# Scheduling State Getters/Setters
+# ----------
+
