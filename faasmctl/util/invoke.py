@@ -56,9 +56,11 @@ def invoke_wasm(msg_dict, num_messages=1, dict_out=False, ini_file=None, host_li
         for _ in range(len(req.messages), expected_num_messages):
             req.messages.append(message_factory(msg_dict, req.appId))
 
-        for group_idx in range(req.messages):
-            msg.groupIdx = group_idx
-            msg.executedHost = host_list[group_idx]
+        # We preload a scheduling decision by passing a BER with each group
+        # index associated to one host in the host list
+        for group_idx in range(len(req.messages)):
+            req.messages[group_idx].groupIdx = group_idx
+            req.messages[group_idx].executedHost = host_list[group_idx]
             group_idx += 1
 
         preload_msg = prepare_planner_msg("PRELOAD_SCHEDULING_DECISION", MessageToJson(req, indent=None))
@@ -69,7 +71,7 @@ def invoke_wasm(msg_dict, num_messages=1, dict_out=False, ini_file=None, host_li
                     response.status_code, response.text
                 )
             )
-            raise RuntimeError("Error resetting planner")
+            raise RuntimeError("Error preloading scheduling decision!")
 
     result = invoke_and_await(url, msg, expected_num_messages)
 
@@ -81,7 +83,7 @@ def invoke_wasm(msg_dict, num_messages=1, dict_out=False, ini_file=None, host_li
 
 def invoke_and_await(url, json_msg, expected_num_messages):
     """
-    Invokke the given JSON message to the given URL and poll the planner to
+    Invoke the given JSON message to the given URL and poll the planner to
     wait for the response
     """
     poll_period = 2
