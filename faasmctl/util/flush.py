@@ -7,7 +7,7 @@ from faasmctl.util.planner import prepare_planner_msg
 from requests import post
 
 
-def do_flush(msg, ini_file):
+def do_flush(msg, ini_file, quiet=True):
     if not ini_file:
         ini_file = get_faasm_ini_file()
 
@@ -24,7 +24,8 @@ def do_flush(msg, ini_file):
         )
         raise RuntimeError("POST request to flush failed!")
 
-    print("Response ({}): {}".format(response.status_code, response.text))
+    if not quiet:
+        print("Response ({}): {}".format(response.status_code, response.text))
 
 
 def flush_hosts(ini_file=None):

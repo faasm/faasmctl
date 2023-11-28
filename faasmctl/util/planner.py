@@ -33,6 +33,8 @@ def prepare_planner_msg(msg_type, msg_body=None):
         http_message.type = HttpMessage.Type.EXECUTE_BATCH
     elif msg_type == "EXECUTE_BATCH_STATUS":
         http_message.type = HttpMessage.Type.EXECUTE_BATCH_STATUS
+    elif msg_type == "PRELOAD_SCHEDULING_DECISION":
+        http_message.type = HttpMessage.Type.PRELOAD_SCHEDULING_DECISION
     else:
         raise RuntimeError("Unrecognised HTTP msg type: {}".format(msg_type))
 
