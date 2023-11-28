@@ -12,7 +12,9 @@ from requests import post
 from time import sleep
 
 
-def invoke_wasm(msg_dict, num_messages=1, dict_out=False, ini_file=None, host_list=None):
+def invoke_wasm(
+    msg_dict, num_messages=1, dict_out=False, ini_file=None, host_list=None
+):
     """
     Main entrypoint to invoke an arbitrary message in a Faasm cluster
 
@@ -63,7 +65,9 @@ def invoke_wasm(msg_dict, num_messages=1, dict_out=False, ini_file=None, host_li
             req.messages[group_idx].executedHost = host_list[group_idx]
             group_idx += 1
 
-        preload_msg = prepare_planner_msg("PRELOAD_SCHEDULING_DECISION", MessageToJson(req, indent=None))
+        preload_msg = prepare_planner_msg(
+            "PRELOAD_SCHEDULING_DECISION", MessageToJson(req, indent=None)
+        )
         response = post(url, data=preload_msg, timeout=None)
         if response.status_code != 200:
             print(
