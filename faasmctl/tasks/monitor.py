@@ -88,6 +88,7 @@ def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupatio
         elif out.returncode == 0:
             to_be_migrated_apps.append(app.appId)
         else:
+            stop_container()
             raise RuntimeError(
                 "Error ({}) checking if app can be migrated: {}".format(
                     out.returncode, out.stderr.decode("utf-8")
