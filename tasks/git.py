@@ -1,6 +1,8 @@
 from invoke import task
 from faasmctl.util.env import DEV_PROJ_ROOT
+from faasmctl.util.faasm import get_version as get_faasm_version
 from faasmctl.util.version import get_version
+from os.path import join
 from subprocess import run
 
 VERSIONED_FILES = [
@@ -63,3 +65,22 @@ def bump(ctx, patch=False, minor=False, major=False):
     for f in VERSIONED_FILES:
         sed_cmd = "sed -i 's/{}/{}/g' {}".format(old_ver, new_ver, f)
         run(sed_cmd, shell=True, check=True, cwd=DEV_PROJ_ROOT)
+
+
+@task
+def bump_dep(ctx, faasm=None):
+    """
+    Bump the version of a tracked dependency
+    """
+    if faasm is not None:
+        new_ver = faasm
+        old_ver = get_faasm_version()
+
+        files_to_check = [
+            join(DEV_PROJ_ROOT, "faasmctl", "util", "faasm.py"),
+            join(DEV_PROJ_ROOT, "bin", "gen_proto_files.py"),
+        ]
+
+        for f in files_to_check:
+            sed_cmd = "sed -i 's/{}/{}/g' {}".format(old_ver, new_ver, f)
+            run(sed_cmd, shell=True, check=True)
