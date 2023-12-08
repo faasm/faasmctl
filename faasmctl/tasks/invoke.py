@@ -1,9 +1,12 @@
+from base64 import b64encode
 from faasmctl.util.invoke import invoke_wasm
 from invoke import task
 
 
 @task(default=True)
-def invoke(ctx, user, func, ini_file=None, cmdline=None, mpi_world_size=None):
+def invoke(
+    ctx, user, func, ini_file=None, cmdline=None, input_data=None, mpi_world_size=None
+):
     """
     Invoke the execution of a user/func pair
 
@@ -15,6 +18,8 @@ def invoke(ctx, user, func, ini_file=None, cmdline=None, mpi_world_size=None):
 
     if cmdline is not None:
         msg_dict["cmdline"] = cmdline
+    if input_data is not None:
+        msg_dict["input_data"] = b64encode(input_data.encode("utf-8")).decode("utf-8")
     if mpi_world_size is not None:
         msg_dict["mpi_world_size"] = int(mpi_world_size)
 

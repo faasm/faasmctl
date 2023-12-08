@@ -8,7 +8,7 @@ running [Faasm](https://github.com/faasm/faasm) cluster.
 To install `faasmctl` you need a working `pip` (virtual-)environment. Then:
 
 ```bash
-pip install faasmctl==0.19.0
+pip install faasmctl==0.20.0
 ```
 
 ## Usage
