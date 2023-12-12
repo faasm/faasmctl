@@ -74,7 +74,8 @@ def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupatio
     """
     # Generate worker occupation file. For more details on the file format, see:
     # https://github.com/faasm/faabric/tree/main/src/planner/is_app_migratable.cpp
-    worker_occupation_file_path = "/tmp/worker_occupation.csv"
+    file_suffix = get_ctr_name().removeprefix(CTR_NAME_BASE)
+    worker_occupation_file_path = "/tmp/worker_occupation{}.csv".format(file_suffix)
     with open(worker_occupation_file_path, "w") as fh:
         fh.write("WorkerIp,Slots\n")
         for ip in worker_occupation:
@@ -122,6 +123,10 @@ def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupatio
     stop_container()
 
     return to_be_migrated_apps
+
+
+# Keep track of the number of migrations when we started monitoring
+orig_num_migrations = -1
 
 
 def print_planner_resources():
@@ -198,6 +203,8 @@ def print_planner_resources():
     # Process data
     # -------------
 
+    global orig_num_migrations
+
     # Work out the worker occupation
     in_flight_apps = get_in_fligh_apps()
     worker_occupation = {}
@@ -210,6 +217,10 @@ def print_planner_resources():
                 worker_occupation_ids[ip] = []
             worker_occupation[ip].append(app_color)
             worker_occupation_ids[ip].append(str(app.appId))
+
+    # Work-out the number of migrations
+    if orig_num_migrations < 0:
+        orig_num_migrations = in_flight_apps.numMigrations
 
     # Work out the existing migration opportunities
     registered_workers = get_available_hosts()
@@ -239,6 +250,13 @@ def print_planner_resources():
         print(div_al)
         print(divide)
         print_apps_legend(in_flight_apps)
+
+    # Print number of migrations
+    num_migrations = in_flight_apps.numMigrations - orig_num_migrations
+    if num_migrations > 0:
+        print(divide)
+        print("Num migrations: {}".format(num_migrations))
+        print(divide)
 
     # Print footer
     print(footer)
