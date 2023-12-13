@@ -80,19 +80,19 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         faasm_ver = faasm_ver.strip()
 
     # Whitelist env. variables that we recognise
-    if "WASM_VM" in environ:
-        wasm_vm = environ["WASM_VM"]
+    if "FAASM_WASM_VM" in environ:
+        wasm_vm = environ["FAASM_WASM_VM"]
         if wasm_vm == "sgx-sim":
             worker_img = "faasm/worker-sgx-sim:{}".format(faasm_ver)
-            env["WASM_VM"] = "sgx"
+            env["FAASM_WASM_VM"] = "sgx"
             env["FAASM_CLI_IMAGE"] = "faasm/cli-sgx-sim:{}".format(faasm_ver)
             env["FAASM_WORKER_IMAGE"] = worker_img
         elif wasm_vm == "sgx":
-            env["WASM_VM"] = "sgx"
+            env["FAASM_WASM_VM"] = "sgx"
             env["FAASM_CLI_IMAGE"] = "faasm/cli-sgx:{}".format(faasm_ver)
             env["FAASM_WORKER_IMAGE"] = "faasm/worker-sgx:{}".format(faasm_ver)
         else:
-            env["WASM_VM"] = wasm_vm
+            env["FAASM_WASM_VM"] = wasm_vm
 
     if "FAASM_CLI_IMAGE" in environ:
         env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]

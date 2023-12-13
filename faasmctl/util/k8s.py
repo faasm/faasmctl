@@ -38,8 +38,8 @@ def get_k8s_env_vars(k8s_context, faasm_checkout, workers):
     env["FAASM_NUM_WORKERS"] = workers
 
     # Whitelist env. variables that we recognise
-    if "WASM_VM" in environ:
-        env["FAASM_WASM_VM"] = environ["WASM_VM"]
+    if "FAASM_WASM_VM" in environ:
+        env["FAASM_WASM_VM"] = environ["FAASM_WASM_VM"]
     else:
         env["FAASM_WASM_VM"] = "wamr"
 
