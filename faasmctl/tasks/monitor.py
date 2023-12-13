@@ -117,7 +117,11 @@ def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupatio
         else:
             # stop_container()
             # Survive downstream binary errors, but report a warning
-            print("WARNING: error checking if app {} can be migrated: {}".format(app.appId, out.stderr.decode("utf-8")))
+            print(
+                "WARNING: error checking if app {} can be migrated: {}".format(
+                    app.appId, out.stderr.decode("utf-8")
+                )
+            )
 
     # Finally stop the container
     stop_container()
