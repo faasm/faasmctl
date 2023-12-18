@@ -13,7 +13,12 @@ from time import sleep
 
 
 def invoke_wasm(
-    msg_dict, num_messages=1, dict_out=False, ini_file=None, host_list=None
+    msg_dict,
+    num_messages=1,
+    req_dict=None,
+    dict_out=False,
+    ini_file=None,
+    host_list=None,
 ):
     """
     Main entrypoint to invoke an arbitrary message in a Faasm cluster
@@ -21,6 +26,7 @@ def invoke_wasm(
     Arguments:
     - msg_dict (dict): dict-like object to build a Message Protobuf from
     - num_messages (int): number of said messages to include in the BER
+    - req_dict (dict): optional dict-like object to prototype the BER from
     - dict_out (bool): flag to indicate that we expect the result as a JSON
                        instead than as a Message class
     - host_list (array): list of (`num_message`s IPs) where to execute each
@@ -35,7 +41,10 @@ def invoke_wasm(
     - The BERStatus result either in a Protobuf class or as a dict if dict_out
       is set
     """
-    req = batch_exec_factory(msg_dict, num_messages)
+    if req_dict is None:
+        req_dict = {"user": msg_dict["user"], "function": msg_dict["function"]}
+
+    req = batch_exec_factory(req_dict, msg_dict, num_messages)
     msg = prepare_planner_msg("EXECUTE_BATCH", MessageToJson(req, indent=None))
 
     if not ini_file:
