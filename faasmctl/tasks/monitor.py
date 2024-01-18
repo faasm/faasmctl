@@ -15,6 +15,7 @@ from sys import exit as sys_exit
 from time import sleep
 
 CTR_NAME_BASE = "faasm-is-migratable-workon"
+NUM_APPS_PER_LINE = 3
 
 
 def get_ctr_name():
@@ -168,7 +169,7 @@ def print_planner_resources():
         print(line)
 
     def print_apps_legend(in_flight_apps):
-        num_apps_per_line = 2
+        num_apps_per_line = NUM_APPS_PER_LINE
         line = ""
         for i, app in enumerate(in_flight_apps.apps):
             app_color = app.appId % 256
@@ -183,7 +184,7 @@ def print_planner_resources():
         print(line)
 
     def print_migration_opportunities(apps_to_be_migrated):
-        num_apps_per_line = 2
+        num_apps_per_line = NUM_APPS_PER_LINE
         line = ""
         for i, app_id in enumerate(apps_to_be_migrated):
             app_color = app_id % 256
