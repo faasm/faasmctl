@@ -187,7 +187,7 @@ def print_planner_resources():
         line = ""
         for i, app_id in enumerate(apps_to_be_migrated):
             app_color = app_id % 256
-            app_text = color_text(app_color, "App ID: {}".format(app.appId))
+            app_text = color_text(app_color, "App ID: {}".format(app_id))
             if i == 0:
                 line = app_text
             elif i % num_apps_per_line == 0:
