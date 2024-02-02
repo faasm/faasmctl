@@ -1,11 +1,14 @@
 ## Uploading WASM functions to a running cluster
 
 In order to execute a WASM function in a Faasm cluster, we need to upload it
-first. In order to do so, you may run:
+first. Functions in Faasm are identified by a `(user, function)` pair. In order
+to upload a function, you may run:
 
 ```bash
-faasmctl upload --wasm-file <path_to_file.wasm>
+faasmctl upload <user> <func> --wasm-file <path_to_file.wasm>
 ```
+
+to invoke the function, check out the [invocation](invoke.md) docs.
 
 Note that Faasm uses a custom host interface that extends WASI, so we recommend
 cross-compiling C/C++ functions with our custom [toolchain](
