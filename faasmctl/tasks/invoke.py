@@ -1,7 +1,13 @@
 from base64 import b64encode
 from faasmctl.util.invoke import invoke_wasm
 from faasmctl.util.planner import get_available_hosts
+from faasmctl.util.results import (
+    get_execution_time_from_message_results,
+    get_return_code_from_message_results,
+)
 from invoke import task
+from sys import exit
+from time import time
 
 
 @task(default=True)
@@ -58,6 +64,7 @@ def invoke(
         host_list = None
 
     # Invoke WASM using main API function
+    start_ts = time()
     result = invoke_wasm(
         msg_dict,
         num_messages=num_messages,
@@ -65,7 +72,31 @@ def invoke(
         ini_file=ini_file,
         host_list=host_list,
     )
+    end_ts = time()
 
-    # We print the outputData of the first message for backwards compatibility.
-    # We could eventually change this behaviour
-    print(result.messageResults[0].outputData)
+    # Pretty-print a summary of the execution
+
+    user = result.messageResults[0].user
+    function = result.messageResults[0].function
+    output = result.messageResults[0].outputData
+    ret_val = get_return_code_from_message_results(result)
+    # Wall time is the time elapsed as measured from the calling python script
+    wall_time = "{:.2f} s".format(end_ts - start_ts)
+    # Exec time is the time the function actually executed inside Faasm
+    exec_time = "{:.2f} s".format(
+        get_execution_time_from_message_results(result, unit="s")
+    )
+
+    print("======================= Faasm Execution =========================")
+    print("Function: \t\t\t{}/{}".format(user, function))
+    print("Return value: \t\t\t{}".format(ret_val))
+    print("Wall time: \t\t\t{}".format(wall_time))
+    print("Execution time: \t\t{}".format(exec_time))
+    print("-----------------------------------------------------------------")
+    print("Output:\n{}".format(output))
+    print("=================================================================")
+
+    # Use sys/exit to propagate the error code to the bash process. If
+    # execution fails, we want the bash process to have a non-zero exit code.
+    # This is very helpful for testing environments like GHA
+    exit(ret_val)
