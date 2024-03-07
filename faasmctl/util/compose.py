@@ -30,6 +30,7 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     env = {}
     if mount_source:
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
+        env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan")
         env["FAASM_BUILD_MOUNT"] = "/build/faasm"
         env["FAASM_CODE_MOUNT"] = "/usr/local/code/faasm"
         env["FAASM_CONAN_MOUNT"] = "/root/.conan"
@@ -40,6 +41,7 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         # to cleanly remove them (as ./dev is root-owned), so we can't rm -rf
         # the directory
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
+        env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan")
         env["FAASM_BUILD_MOUNT"] = "/host_dev/build"
         env["FAASM_CODE_MOUNT"] = "/host_dev/code"
         env["FAASM_CONAN_MOUNT"] = "/host_dev/conan"
@@ -96,6 +98,9 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
 
     if "FAASM_CLI_IMAGE" in environ:
         env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
+
+    if "CONAN_CACHE_MOUNT_SOURCE" in environ:
+        env["CONAN_CACHE_MOUNT_SOURCE"] = environ["CONAN_CACHE_MOUNT_SOURCE"]
 
     return env
 
