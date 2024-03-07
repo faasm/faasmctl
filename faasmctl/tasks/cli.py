@@ -10,7 +10,7 @@ from os.path import abspath, exists
 from subprocess import run
 
 
-def do_run_cmd(cli, cmd, cp_in, cp_out, ini_file):
+def do_run_cmd(cli, cmd, cp_in, cp_out, env, ini_file):
     if not ini_file:
         ini_file = get_faasm_ini_file()
 
@@ -48,6 +48,7 @@ def do_run_cmd(cli, cmd, cp_in, cp_out, ini_file):
         compose_cmd = [
             "exec",
             "-e FAASM_INI_FILE={}".format(ini_file_ctr_path),
+            " ".join(["-e {}".format(var) for var in env.split(",")]) if env is not None else "",
             "-it" if not cmd else "",
             cli,
             "bash" if not cmd else cmd,
@@ -96,7 +97,7 @@ def do_run_cmd(cli, cmd, cp_in, cp_out, ini_file):
 
 
 @task
-def faasm(ctx, cmd=None, cp_in=None, cp_out=None, ini_file=None):
+def faasm(ctx, cmd=None, cp_in=None, cp_out=None, env=None, ini_file=None):
     """
     Run a command in the Faasm CLI container
 
@@ -107,13 +108,14 @@ def faasm(ctx, cmd=None, cp_in=None, cp_out=None, ini_file=None):
     - cmd (str): command to run in the CLI container
     - cp_in (str): file to copy into the CLI as host_path:ctr_path
     - cp_out (str): file to copy out of the CLI as ctr_path:host_path
+    - env (str): comma-separated ENV=VAR environment variables for cmd
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("faasm-cli", cmd, cp_in, cp_out, ini_file)
+    do_run_cmd("faasm-cli", cmd, cp_in, cp_out, env, ini_file)
 
 
 @task
-def cpp(ctx, cmd=None, cp_in=None, cp_out=None, ini_file=None):
+def cpp(ctx, cmd=None, cp_in=None, cp_out=None, env=None, ini_file=None):
     """
     Run a command in the CPP CLI container
 
@@ -126,11 +128,11 @@ def cpp(ctx, cmd=None, cp_in=None, cp_out=None, ini_file=None):
     - cp_out (str): file to copy out of the CLI as ctr_path:host_path
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("cpp", cmd, ini_file, cp_in, cp_out)
+    do_run_cmd("cpp", cmd, cp_in, cp_out, env, ini_file)
 
 
 @task
-def python(ctx, cmd=None, cp_in=None, cp_out=None, ini_file=None):
+def python(ctx, cmd=None, cp_in=None, cp_out=None, env=None, ini_file=None):
     """
     Run a command in the Python CLI container
 
@@ -143,4 +145,4 @@ def python(ctx, cmd=None, cp_in=None, cp_out=None, ini_file=None):
     - cp_out (str): file to copy out of the CLI as ctr_path:host_path
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("python", cmd, cp_in, cp_out, ini_file)
+    do_run_cmd("python", cmd, cp_in, cp_out, env, ini_file)
