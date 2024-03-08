@@ -6,11 +6,11 @@ from faasmctl.util.config import (
 )
 from faasmctl.util.docker import get_docker_tag
 from invoke import task
-from os.path import abspath
+from os.path import abspath, exists
 from subprocess import run
 
 
-def do_run_cmd(cli, cmd, ini_file):
+def do_run_cmd(cli, cmd, cp_in, cp_out, env, ini_file):
     if not ini_file:
         ini_file = get_faasm_ini_file()
 
@@ -33,16 +33,36 @@ def do_run_cmd(cli, cmd, ini_file):
         # mounting the source, or using one of the clients
         wait_for_venv(ini_file, cli)
 
+        # Copy files in before execution
+        if cp_in:
+            host_path = abspath(cp_in.split(":")[0])
+            if not exists(host_path):
+                print("Host path to copy from does not exist ({})".format(host_path))
+                raise RuntimeError("Host path to copy from does not exist")
+            ctr_path = cp_in.split(":")[1]
+
+            cp_cmd = "cp {} {}:{}".format(host_path, cli, ctr_path)
+            run_compose_cmd(ini_file, cp_cmd)
+
         # Lastly, actually run the requested command
         compose_cmd = [
             "exec",
             "-e FAASM_INI_FILE={}".format(ini_file_ctr_path),
+            " ".join(["-e {}".format(var) for var in env.split(",")]) if env is not None else "",
             "-it" if not cmd else "",
             cli,
             "bash" if not cmd else cmd,
         ]
         compose_cmd = " ".join(compose_cmd)
         run_compose_cmd(ini_file, compose_cmd)
+
+        # Copy files out after execution
+        if cp_out:
+            ctr_path = cp_out.split(":")[0]
+            host_path = abspath(cp_out.split(":")[1])
+
+            cp_cmd = "cp {}:{} {}".format(cli, ctr_path, host_path)
+            run_compose_cmd(ini_file, cp_cmd)
 
     elif backend == "k8s":
         # Using a CLI container with a cluster that runs on a `k8s` backend is
@@ -77,7 +97,7 @@ def do_run_cmd(cli, cmd, ini_file):
 
 
 @task
-def faasm(ctx, cmd=None, ini_file=None):
+def faasm(ctx, cmd=None, cp_in=None, cp_out=None, env=None, ini_file=None):
     """
     Run a command in the Faasm CLI container
 
@@ -86,13 +106,16 @@ def faasm(ctx, cmd=None, ini_file=None):
 
     Parameters:
     - cmd (str): command to run in the CLI container
+    - cp_in (str): file to copy into the CLI as host_path:ctr_path
+    - cp_out (str): file to copy out of the CLI as ctr_path:host_path
+    - env (str): comma-separated ENV=VAR environment variables for cmd
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("faasm-cli", cmd, ini_file)
+    do_run_cmd("faasm-cli", cmd, cp_in, cp_out, env, ini_file)
 
 
 @task
-def cpp(ctx, cmd=None, ini_file=None):
+def cpp(ctx, cmd=None, cp_in=None, cp_out=None, env=None, ini_file=None):
     """
     Run a command in the CPP CLI container
 
@@ -101,13 +124,15 @@ def cpp(ctx, cmd=None, ini_file=None):
 
     Parameters:
     - cmd (str): command to run in the CLI container
+    - cp_in (str): file to copy into the CLI as host_path:ctr_path
+    - cp_out (str): file to copy out of the CLI as ctr_path:host_path
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("cpp", cmd, ini_file)
+    do_run_cmd("cpp", cmd, cp_in, cp_out, env, ini_file)
 
 
 @task
-def python(ctx, cmd=None, ini_file=None):
+def python(ctx, cmd=None, cp_in=None, cp_out=None, env=None, ini_file=None):
     """
     Run a command in the Python CLI container
 
@@ -116,6 +141,8 @@ def python(ctx, cmd=None, ini_file=None):
 
     Parameters:
     - cmd (str): command to run in the CLI container
+    - cp_in (str): file to copy into the CLI as host_path:ctr_path
+    - cp_out (str): file to copy out of the CLI as ctr_path:host_path
     - ini_file (str): path to the cluster's INI file
     """
-    do_run_cmd("python", cmd, ini_file)
+    do_run_cmd("python", cmd, cp_in, cp_out, env, ini_file)
