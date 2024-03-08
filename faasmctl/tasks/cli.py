@@ -58,8 +58,8 @@ def do_run_cmd(cli, cmd, cp_in, cp_out, env, ini_file):
 
         # Copy files out after execution
         if cp_out:
-            ctr_path = cp_in.split(":")[0]
-            host_path = abspath(cp_in.split(":")[1])
+            ctr_path = cp_out.split(":")[0]
+            host_path = abspath(cp_out.split(":")[1])
 
             cp_cmd = "cp {}:{} {}".format(cli, ctr_path, host_path)
             run_compose_cmd(ini_file, cp_cmd)
