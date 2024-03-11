@@ -256,8 +256,8 @@ def populate_host_sysroot(faasm_checkout, clean=False):
             # We are specific about which bits to copy from the llvm-sysroot
             # for the python functions. Overwriting all the sysroot with the
             # one tracked in the CPython image is unneccessary
-            join("llvm-sysroot", "lib", "wasm32-wasi", "libpython3.8.a"),
-            join("llvm-sysroot", "include", "python3.8"),
+            join("llvm-sysroot", "lib", "wasm32-wasi-threads", "libpython3.8.a"),
+            join("llvm-sysroot", "include", "wasm32-wasi-threads", "python3.8"),
         ],
     }
 
