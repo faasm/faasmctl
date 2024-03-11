@@ -48,7 +48,9 @@ def do_run_cmd(cli, cmd, cp_in, cp_out, env, ini_file):
         compose_cmd = [
             "exec",
             "-e FAASM_INI_FILE={}".format(ini_file_ctr_path),
-            " ".join(["-e {}".format(var) for var in env.split(",")]) if env is not None else "",
+            " ".join(["-e {}".format(var) for var in env.split(",")])
+            if env is not None
+            else "",
             "-it" if not cmd else "",
             cli,
             "bash" if not cmd else cmd,
