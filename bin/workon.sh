@@ -39,8 +39,8 @@ complete -F _complete_invoke -o default invoke inv
 # Environment vars
 # ----------------------------
 
-VERSION_FILE=${PROJ_ROOT}/VERSION
-export FAASMCTL_VERSION=$(cat ${VERSION_FILE})
+# Read version by calling locally-installed `faasmctl` as smoke test
+export FAASMCTL_VERSION=$(faasmctl --version | cut -d' ' -f2)
 
 export PS1="(faasmctl-dev) $PS1"
 
