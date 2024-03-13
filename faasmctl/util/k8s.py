@@ -6,6 +6,9 @@ from subprocess import run
 from time import sleep
 
 DEFAULT_KUBECONFIG_PATH = join(expanduser("~"), ".kube", "config")
+BASE_LABEL = "faasm.io/role"
+CONTROL_LABEL = "{}=control".format(BASE_LABEL)
+WORKER_LABEL = "{}=worker".format(BASE_LABEL)
 
 
 def run_k8s_cmd(k8s_config, namespace, cmd, capture_output=False):
@@ -46,6 +49,45 @@ def get_k8s_env_vars(k8s_context, faasm_checkout, workers):
     return env
 
 
+def get_k8s_nodes(k8s_context):
+    out = run_k8s_cmd(k8s_context, None, "get nodes", capture_output=True).strip()
+    nodes = [node.split(" ")[0] for node in out.split("\n")][1:]
+
+    return nodes
+
+
+def label_k8s_nodes(k8s_context, num_workers):
+    """
+    This method labels the nodes in the K8s cluster for a Faasm deployment.
+
+    One node will get the control label, meaning that it will run all the
+    non-worker pods. The other nodes will get the worker label, meaning that
+    each one will run one worker pod (per node!).
+    """
+    # First, assert that we have at least workers + 1 nodes in the K8s cluster
+    k8s_nodes = get_k8s_nodes(k8s_context)
+    if len(k8s_nodes) < (num_workers + 1):
+        print(
+            "Not enough nodes in the K8s cluster (have: {} - need: {})".format(
+                len(k8s_nodes), num_workers + 1
+            )
+        )
+        raise RuntimeError("Not enough nodes in the K8s cluster!")
+
+    # Second, label 1 node as control, and #worker nodes as workers
+    def label_node(node, label):
+        run_k8s_cmd(
+            k8s_context,
+            None,
+            "label nodes {} {}".format(node, label),
+            capture_output=True,
+        )
+
+    label_node(k8s_nodes[0], CONTROL_LABEL)
+    for i in range(1, num_workers + 1):
+        label_node(k8s_nodes[i], WORKER_LABEL)
+
+
 def deploy_k8s_cluster(k8s_context, faasm_checkout, workers, ini_file):
     """
     Deploy a docker compose cluster
@@ -59,6 +101,9 @@ def deploy_k8s_cluster(k8s_context, faasm_checkout, workers, ini_file):
     Returns:
     - (str): path to the generated ini_file
     """
+    # Before deploying, label the cluster nodes accordingly
+    label_k8s_nodes(k8s_context, workers)
+
     env = get_k8s_env_vars(k8s_context, faasm_checkout, workers)
 
     deploy_faasm_services(env)
