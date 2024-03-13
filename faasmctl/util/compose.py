@@ -123,11 +123,11 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
     # Generate random compose project name
     env["COMPOSE_PROJECT_NAME"] = "faasm-{}".format(generate_gid())
 
-    # Deploy the compose cluster
+    # Deploy the compose cluster (0 workers <=> cli-only cluster)
     cmd = [
         "docker compose up -d",
         "--scale worker={}".format(workers),
-        "worker",
+        "worker" if int(workers) > 0 else "faasm-cli",
     ]
     cmd = " ".join(cmd)
     run(cmd, shell=True, check=True, cwd=faasm_checkout, env=env)
