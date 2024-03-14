@@ -126,7 +126,7 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
     # Deploy the compose cluster (0 workers <=> cli-only cluster)
     cmd = [
         "docker compose up -d",
-        "--scale worker={}".format(workers),
+        "--scale worker={}".format(workers) if int(workers) > 0 else "",
         "worker" if int(workers) > 0 else "faasm-cli",
     ]
     cmd = " ".join(cmd)
