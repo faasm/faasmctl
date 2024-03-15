@@ -44,7 +44,7 @@ def prepare_planner_msg(msg_type, msg_body=None):
     return MessageToJson(http_message, indent=None)
 
 
-def reset(expected_num_workers=None):
+def reset(expected_num_workers=None, verbose=False):
     """
     Reset the planner with an HTTP request
 
@@ -72,7 +72,7 @@ def reset(expected_num_workers=None):
         raise RuntimeError("Error resetting planner")
 
     if expected_num_workers:
-        wait_for_workers(expected_num_workers)
+        wait_for_workers(expected_num_workers, verbose=verbose)
 
 
 # ----------
@@ -101,7 +101,7 @@ def get_available_hosts():
     return available_hosts
 
 
-def wait_for_workers(expected_num_workers):
+def wait_for_workers(expected_num_workers, verbose=False):
     """
     Wait for a number of workers to be registered with the planner
 
@@ -120,11 +120,13 @@ def wait_for_workers(expected_num_workers):
         if len(available_hosts.hosts) == expected_num_workers:
             break
 
-        print(
-            "Waiting for workers to register with planner ({}/{})...".format(
-                len(available_hosts.hosts), expected_num_workers
+        if verbose:
+            print(
+                "Waiting for workers to register with planner ({}/{})...".format(
+                    len(available_hosts.hosts), expected_num_workers
+                )
             )
-        )
+
         sleep(poll_period)
 
 
