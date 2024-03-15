@@ -17,7 +17,7 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v3
       - name: "Generate protobuf files to be included in the distribution"
-        run: ./bin/gen_proto_files.py
+        run: ./faasmctl/bin/gen_proto_files.py
       - name: "Set up Python"
         uses: actions/setup-python@v4
         with:

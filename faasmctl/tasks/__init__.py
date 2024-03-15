@@ -4,6 +4,7 @@ from . import cli
 from . import delete
 from . import deploy
 from . import flush
+from . import generate
 from . import invoke
 from . import logs
 from . import monitor
@@ -15,6 +16,7 @@ task_ns = Collection(
     cli,
     delete,
     deploy,
+    generate,
     flush,
     invoke,
     logs,

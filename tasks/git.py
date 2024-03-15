@@ -78,7 +78,6 @@ def bump_dep(ctx, faasm=None):
 
         files_to_check = [
             join(DEV_PROJ_ROOT, "faasmctl", "util", "faasm.py"),
-            join(DEV_PROJ_ROOT, "bin", "gen_proto_files.py"),
         ]
 
         for f in files_to_check:
