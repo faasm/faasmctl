@@ -39,7 +39,7 @@ def invoke(
     if mpi_world_size is not None:
         msg_dict["mpi_world_size"] = int(mpi_world_size)
     if single_host:
-        req_dict["singleHost"] = single_host
+        req_dict["singleHostHint"] = single_host
     if host_dist:
         host_dist = host_dist.split(",")
         # Prepare a host distribution
