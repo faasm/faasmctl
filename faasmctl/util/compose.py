@@ -1,6 +1,7 @@
 from faasmctl.util.config import get_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.docker import get_docker_tag
+from faasmctl.util.faasm import FAASM_DOCKER_REGISTRY
 from faasmctl.util.network import get_next_bindable_port
 from faasmctl.util.random import generate_gid
 from json import loads as json_loads
@@ -85,14 +86,20 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     if "FAASM_WASM_VM" in environ:
         wasm_vm = environ["FAASM_WASM_VM"]
         if wasm_vm == "sgx-sim":
-            worker_img = "faasm/worker-sgx-sim:{}".format(faasm_ver)
+            worker_img = "{}/worker-sgx-sim:{}".format(FAASM_DOCKER_REGISTRY, faasm_ver)
             env["FAASM_WASM_VM"] = "sgx"
-            env["FAASM_CLI_IMAGE"] = "faasm/cli-sgx-sim:{}".format(faasm_ver)
+            env["FAASM_CLI_IMAGE"] = "{}/cli-sgx-sim:{}".format(
+                FAASM_DOCKER_REGISTRY, faasm_ver
+            )
             env["FAASM_WORKER_IMAGE"] = worker_img
         elif wasm_vm == "sgx":
             env["FAASM_WASM_VM"] = "sgx"
-            env["FAASM_CLI_IMAGE"] = "faasm/cli-sgx:{}".format(faasm_ver)
-            env["FAASM_WORKER_IMAGE"] = "faasm/worker-sgx:{}".format(faasm_ver)
+            env["FAASM_CLI_IMAGE"] = "{}/cli-sgx:{}".format(
+                FAASM_DOCKER_REGISTRY, faasm_ver
+            )
+            env["FAASM_WORKER_IMAGE"] = "{}/worker-sgx:{}".format(
+                FAASM_DOCKER_REGISTRY, faasm_ver
+            )
         else:
             env["FAASM_WASM_VM"] = wasm_vm
 
