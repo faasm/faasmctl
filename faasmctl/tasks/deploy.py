@@ -76,13 +76,14 @@ def dist_tests(ctx, mount_source=None, ini_file=None):
 
 
 @task
-def k8s(ctx, workers=2, context=None, ini_file=None):
+def k8s(ctx, workers=2, context=None, clean=False, ini_file=None):
     """
     Deploy a Faasm cluster on k8s
 
     Parameters:
     - workers (int): number of workers to deploy
     - context (str): path to the k8s config to use (defaults to ~/.kube/config)
+    - clean (bool): flag to clean the local checkout of the code tag
     - ini_file (str): path to the ini_file to generate (if selected)
 
     Returns:
@@ -90,7 +91,7 @@ def k8s(ctx, workers=2, context=None, ini_file=None):
     """
     # First, check-out the Faasm source if necessary (we need it for the k8s
     # deployment files, eventually we could publish them as helm charts)
-    faasm_checkout, faasm_ver = fetch_faasm_code()
+    faasm_checkout, faasm_ver = fetch_faasm_code(force=clean)
 
     if context:
         context = abspath(context)
