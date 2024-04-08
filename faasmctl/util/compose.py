@@ -11,6 +11,8 @@ from shutil import rmtree
 from subprocess import run
 from time import sleep
 
+DEFAULT_FAASM_OVERRIDE_CPU_COUNT = "8"
+
 
 def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     """
@@ -29,6 +31,8 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     - A dictionary with the necessary env. variables
     """
     env = {}
+    env["FAASM_DEPLOYMENT_TYPE"] = "compose"
+
     if mount_source:
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
         env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan")
@@ -83,6 +87,9 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         faasm_ver = faasm_ver.strip()
 
     # Whitelist env. variables that we recognise
+    if "FAASM_DEPLOYMENT_TYPE" in environ:
+        env["FAASM_DEPLOYMENT_TYPE"] = environ["FAASM_DEPLOYMENT_TYPE"]
+
     if "FAASM_WASM_VM" in environ:
         wasm_vm = environ["FAASM_WASM_VM"]
         if wasm_vm == "sgx-sim":
@@ -102,6 +109,10 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
             )
         else:
             env["FAASM_WASM_VM"] = wasm_vm
+
+    env["FAASM_OVERRIDE_CPU_COUNT"] = DEFAULT_FAASM_OVERRIDE_CPU_COUNT
+    if "FAASM_OVERRIDE_CPU_COUNT" in environ:
+        env["FAASM_OVERRIDE_CPU_COUNT"] = environ["FAASM_OVERRIDE_CPU_COUNT"]
 
     if "FAASM_CLI_IMAGE" in environ:
         env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
