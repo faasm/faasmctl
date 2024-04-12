@@ -1,5 +1,9 @@
 from faasmctl.util.config import get_faasm_ini_file, get_faasm_planner_host_port
-from faasmctl.util.gen_proto.planner_pb2 import AvailableHostsResponse, HttpMessage
+from faasmctl.util.gen_proto.planner_pb2 import (
+    AvailableHostsResponse,
+    GetInFlightAppsResponse,
+    HttpMessage,
+)
 from google.protobuf.json_format import MessageToJson, Parse
 from requests import post
 from time import sleep
@@ -133,3 +137,23 @@ def wait_for_workers(expected_num_workers, verbose=False):
 # ----------
 # Scheduling State Getters/Setters
 # ----------
+
+
+def get_in_fligh_apps():
+    host, port = get_faasm_planner_host_port(get_faasm_ini_file())
+    url = "http://{}:{}".format(host, port)
+    planner_msg = prepare_planner_msg("GET_IN_FLIGHT_APPS")
+
+    response = post(url, data=planner_msg, timeout=None)
+
+    if response.status_code != 200:
+        print(
+            "Error getting in flight apps (code: {}): {}".format(
+                response.status_code, response.text
+            )
+        )
+        raise RuntimeError("Error getting in flight apps")
+
+    in_flight_apps = Parse(response.text, GetInFlightAppsResponse())
+
+    return in_flight_apps

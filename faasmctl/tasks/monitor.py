@@ -4,11 +4,8 @@ from faasmctl.util.config import (
     get_faasm_planner_host_port,
 )
 from faasmctl.util.faasm import FAASM_CLI_IMAGE
-from faasmctl.util.gen_proto.planner_pb2 import GetInFlightAppsResponse
-from faasmctl.util.planner import get_available_hosts, prepare_planner_msg
-from google.protobuf.json_format import Parse
+from faasmctl.util.planner import get_available_hosts, get_in_fligh_apps
 from invoke import task
-from requests import post
 from signal import SIGINT, signal
 from subprocess import run
 from sys import exit as sys_exit
@@ -46,26 +43,6 @@ def stop_container():
     assert out.returncode == 0, "Error running docker (cmd: {}): {}".format(
         docker_cmd, out.stderr.decode("utf-8")
     )
-
-
-def get_in_fligh_apps():
-    host, port = get_faasm_planner_host_port(get_faasm_ini_file())
-    url = "http://{}:{}".format(host, port)
-    planner_msg = prepare_planner_msg("GET_IN_FLIGHT_APPS")
-
-    response = post(url, data=planner_msg, timeout=None)
-
-    if response.status_code != 200:
-        print(
-            "Error getting in flight apps (code: {}): {}".format(
-                response.status_code, response.text
-            )
-        )
-        raise RuntimeError("Error getting in flight apps")
-
-    in_flight_apps = Parse(response.text, GetInFlightAppsResponse())
-
-    return in_flight_apps
 
 
 def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupation):
