@@ -4,7 +4,9 @@ from faasmctl.util.config import (
     BACKEND_INI_STRING,
     get_faasm_ini_file,
     get_faasm_ini_value,
+    update_faasm_ini_vaule,
 )
+from faasmctl.util.time import get_time_rfc3339
 from invoke import task
 
 
@@ -27,4 +29,6 @@ def restart(ctx, s, ini_file=None):
             "running on a '{}' backend".format(COMPOSE_BACKEND)
         )
 
+    # Update the last restart value
+    update_faasm_ini_vaule(ini_file, "Faasm", "last_restart", get_time_rfc3339())
     run_compose_cmd(ini_file, "restart {}".format(" ".join(s)))

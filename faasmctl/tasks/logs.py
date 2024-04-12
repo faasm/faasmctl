@@ -27,8 +27,10 @@ def logs(ctx, s, follow=False, ini_file=None):
             "running on a '{}' backend".format(COMPOSE_BACKEND)
         )
 
+    last_restart = get_faasm_ini_value(ini_file, "Faasm", "last_restart")
     compose_cmd = [
         "logs",
+        "--since {}".format(last_restart),
         "-f" if follow else "",
         "{}".format(" ".join(s)),
     ]
