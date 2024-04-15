@@ -1,7 +1,8 @@
-from datetime import datetime
+from configparser import ConfigParser
 from faasmctl.util.env import FAASM_SOURCE_DIR
 from faasmctl.util.faasm import get_version as get_faasm_version
 from faasmctl.util.network import LOCALHOST_IP
+from faasmctl.util.time import get_time_rfc3339
 from os import makedirs
 from os.path import abspath, exists, join
 from shutil import rmtree
@@ -109,43 +110,41 @@ def generate_ini_file(backend, out_file, **kwargs):
         out_file = "./faasm.ini"
 
     print("Generating Faasm INI file at: {}".format(out_file))
+    config = ConfigParser()
+    config["Faasm"] = {}
+
+    # fh.write("# Auto-generated at {}\n".format(time_now))
+    config["Faasm"]["backend"] = backend
+    config["Faasm"]["last_restart"] = get_time_rfc3339()
+    config["Faasm"]["working_dir"] = working_dir
+    if backend == "compose":
+        config["Faasm"]["mount_source"] = "{}".format(kwargs["mount_source"])
+    elif backend == "k8s":
+        config["Faasm"]["k8s_config"] = k8s_config
+    if backend == "compose":
+        config["Faasm"]["cluster_name"] = cluster_name
+    elif backend == "k8s":
+        config["Faasm"]["k8s_namespace"] = k8s_namespace
+    config["Faasm"]["upload_host"] = upload_ip
+    if backend == "compose":
+        config["Faasm"]["upload_host_in_docker"] = "upload"
+    config["Faasm"]["upload_port"] = upload_port
+    if backend == "compose":
+        config["Faasm"]["upload_port_in_docker"] = kwargs["upload_docker_port"]
+    config["Faasm"]["planner_host"] = planner_ip
+    if backend == "compose":
+        config["Faasm"]["planner_host_in_docker"] = "planner"
+    if backend == "compose":
+        config["Faasm"]["minio_port"] = kwargs["minio_host_port"]
+        config["Faasm"]["minio_port_in_docker"] = kwargs["minio_docker_port"]
+    config["Faasm"]["planner_port"] = planner_port
+    if backend == "compose":
+        config["Faasm"]["planner_port_in_docker"] = kwargs["planner_docker_port"]
+    config["Faasm"]["worker_names"] = "{}".format(",".join(worker_names))
+    config["Faasm"]["worker_ips"] = "{}".format(",".join(worker_ips))
+
     with open(out_file, "w") as fh:
-        fh.write("[Faasm]\n")
-
-        # This comment line can't be outside of the Faasm section
-        fh.write("# Auto-generated at {}\n".format(datetime.now()))
-
-        fh.write("backend = {}\n".format(backend))
-        fh.write("working_dir = {}\n".format(working_dir))
-        if backend == "compose":
-            fh.write("mount_source = {}\n".format(kwargs["mount_source"]))
-        elif backend == "k8s":
-            fh.write("k8s_config = {}\n".format(k8s_config))
-        if backend == "compose":
-            fh.write("cluster_name = {}\n".format(cluster_name))
-        elif backend == "k8s":
-            fh.write("k8s_namespace = {}\n".format(k8s_namespace))
-        fh.write("upload_host = {}\n".format(upload_ip))
-        if backend == "compose":
-            fh.write("upload_host_in_docker = upload\n")
-        fh.write("upload_port = {}\n".format(upload_port))
-        if backend == "compose":
-            fh.write(
-                "upload_port_in_docker = {}\n".format(kwargs["upload_docker_port"])
-            )
-        fh.write("planner_host = {}\n".format(planner_ip))
-        if backend == "compose":
-            fh.write("planner_host_in_docker = planner\n")
-        if backend == "compose":
-            fh.write("minio_port = {}\n".format(kwargs["minio_host_port"]))
-            fh.write("minio_port_in_docker = {}\n".format(kwargs["minio_docker_port"]))
-        fh.write("planner_port = {}\n".format(planner_port))
-        if backend == "compose":
-            fh.write(
-                "planner_port_in_docker = {}\n".format(kwargs["planner_docker_port"])
-            )
-        fh.write("worker_names = {}\n".format(",".join(worker_names)))
-        fh.write("worker_ips = {}\n".format(",".join(worker_ips)))
+        config.write(fh)
 
     with open(out_file, "r") as fh:
         print(fh.read())

@@ -24,6 +24,18 @@ def get_faasm_ini_value(ini_file, section, key):
     return config[section].get(key, "")
 
 
+def update_faasm_ini_vaule(ini_file, section, key, new_value):
+    if not exists(ini_file):
+        raise RuntimeError("Did not find faasm config at: {}".format(ini_file))
+
+    config = ConfigParser()
+    config.read(ini_file)
+    config[section][key] = new_value
+
+    with open(ini_file, "w") as fh:
+        config.write(fh)
+
+
 def get_faasm_upload_host_port(ini_file, in_docker=False):
     backend = get_faasm_ini_value(ini_file, "Faasm", "backend")
     if backend == "compose" and in_docker:
