@@ -1,9 +1,14 @@
 from faasmctl.util.backend import COMPOSE_BACKEND
-from faasmctl.util.compose import run_compose_cmd
+from faasmctl.util.compose import (
+    get_container_ips_from_compose,
+    get_container_names_from_compose,
+    run_compose_cmd,
+)
 from faasmctl.util.config import (
     BACKEND_INI_STRING,
     get_faasm_ini_file,
     get_faasm_ini_value,
+    update_faasm_ini_vaule,
 )
 from invoke import task
 
@@ -28,3 +33,15 @@ def scale(ctx, service, replicas, ini_file=None):
         )
 
     run_compose_cmd(ini_file, "scale {}={}".format(service, replicas))
+
+    # Update the worker names and ips in the INI file
+    faasm_checkout = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
+    cluster_name = get_faasm_ini_value(ini_file, "Faasm", "cluster_name")
+    worker_names = "{}".format(
+        ",".join(get_container_names_from_compose(faasm_checkout, cluster_name))
+    )
+    worker_ips = "{}".format(
+        ",".join(get_container_ips_from_compose(faasm_checkout, cluster_name))
+    )
+    update_faasm_ini_vaule(ini_file, "Faasm", "worker_names", worker_names)
+    update_faasm_ini_vaule(ini_file, "Faasm", "worker_ips", worker_ips)
