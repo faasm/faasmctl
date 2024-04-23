@@ -45,7 +45,9 @@ def stop_container():
     )
 
 
-def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupation):
+def get_apps_to_be_migrated(
+    num_users, registered_workers, in_flight_apps, worker_occupation
+):
     """
     Helper method that, given the current worker occupation, works out all the
     apps that could be migrated if they checked for a migration opportunity
@@ -76,13 +78,14 @@ def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupatio
         docker_cmd, out.stderr.decode("utf-8")
     )
 
+    planner_policy = "bin-pack" if num_users is None else "compact"
     to_be_migrated_apps = []
     for app in in_flight_apps.apps:
         docker_cmd = [
             "docker exec",
             get_ctr_name(),
-            "bash -c '/build/faasm/bin/is_app_migratable {} {}'".format(
-                app.appId, worker_occupation_file_path
+            "bash -c '/build/faasm/bin/is_app_migratable {} {} {}'".format(
+                planner_policy, app.appId, worker_occupation_file_path
             ),
         ]
         docker_cmd = " ".join(docker_cmd)
@@ -111,7 +114,7 @@ def get_apps_to_be_migrated(registered_workers, in_flight_apps, worker_occupatio
 orig_num_migrations = -1
 
 
-def print_planner_resources():
+def print_planner_resources(num_users):
     """
     Helper method to visualise the state of the planner
     """
@@ -145,11 +148,23 @@ def print_planner_resources():
                 line += " [ ]"
         print(line)
 
+    def get_app_color(app, num_users):
+        user_id = 0
+        try:
+            user_id = app.subType
+        except AttributeError:
+            pass
+
+        if num_users is None:
+            return app.appId % 256
+
+        return (user_id * 10) % 256
+
     def print_apps_legend(in_flight_apps):
         num_apps_per_line = NUM_APPS_PER_LINE
         line = ""
         for i, app in enumerate(in_flight_apps.apps):
-            app_color = app.appId % 256
+            app_color = get_app_color(app, num_users)
             app_text = color_text(app_color, "App ID: {}".format(app.appId))
             if i == 0:
                 line = app_text
@@ -164,7 +179,7 @@ def print_planner_resources():
         num_apps_per_line = NUM_APPS_PER_LINE
         line = ""
         for i, app_id in enumerate(apps_to_be_migrated):
-            app_color = app_id % 256
+            app_color = get_app_color(app, num_users)
             app_text = color_text(app_color, "App ID: {}".format(app_id))
             if i == 0:
                 line = app_text
@@ -192,7 +207,7 @@ def print_planner_resources():
     worker_occupation = {}
     worker_occupation_ids = {}
     for app in in_flight_apps.apps:
-        app_color = app.appId % 256
+        app_color = get_app_color(app, num_users)
         for ip in app.hostIps:
             if ip not in worker_occupation:
                 worker_occupation[ip] = []
@@ -207,7 +222,7 @@ def print_planner_resources():
     # Work out the existing migration opportunities
     registered_workers = get_available_hosts()
     apps_to_be_migrated = get_apps_to_be_migrated(
-        registered_workers, in_flight_apps, worker_occupation_ids
+        num_users, registered_workers, in_flight_apps, worker_occupation_ids
     )
 
     # -------------
@@ -253,11 +268,11 @@ def signal_handler(sig, frame):
 
 
 @task
-def planner(ctx, poll_period_sec=2):
+def planner(ctx, num_users=None, poll_period_sec=2):
     """
     Monitor the in-flight apps and host occupation in the planner
     """
     signal(SIGINT, signal_handler)
     while True:
-        print_planner_resources()
+        print_planner_resources(num_users)
         sleep(poll_period_sec)
