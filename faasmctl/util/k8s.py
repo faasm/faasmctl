@@ -1,4 +1,4 @@
-from faasmctl.util.config import get_faasm_ini_value
+from faasmctl.util.config import get_faasm_ini_value, update_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from os import environ, listdir
 from os.path import expanduser, join
@@ -237,7 +237,6 @@ def get_faasm_worker_pods(env, label):
     )
     ips = [o.strip() for o in output.split(":") if o.strip()]
 
-    print("Using faasm worker pods: {}".format(ips))
     return names, ips
 
 
@@ -293,7 +292,10 @@ def wait_for_faasm_pods(env, label):
             print("All Faasm pods ready, continuing...")
             break
 
-        print("Faasm pods not ready, waiting ({})".format(output))
+        true_statuses = len([s for s in statuses if s == "True"])
+        print(
+            "Faasm pods not ready, waiting ({}/{})".format(true_statuses, len(statuses))
+        )
         sleep(5)
 
 
@@ -348,3 +350,22 @@ def delete_k8s_cluster(ini_file):
             None,
             "delete --all -f {}".format(dir_to_delete),
         )
+
+
+def restart_pod_by_name(ini_file, pod_names):
+    k8s_config = get_faasm_ini_value(ini_file, "Faasm", "k8s_config")
+    faasm_checkout = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
+    env = get_k8s_env_vars(k8s_config, faasm_checkout, 0)
+
+    run_k8s_cmd(
+        k8s_config,
+        "faasm",
+        "delete pod {}".format(" ".join(pod_names)),
+        capture_output=True,
+    )
+
+    # Update the worker list
+    worker_names, worker_ips = get_faasm_worker_pods(env, "run=faasm-worker")
+
+    update_faasm_ini_value(ini_file, "Faasm", "worker_names", ",".join(worker_names))
+    update_faasm_ini_value(ini_file, "Faasm", "worker_ips", ",".join(worker_ips))

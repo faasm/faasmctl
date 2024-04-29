@@ -1,4 +1,4 @@
-from faasmctl.util.config import get_faasm_ini_value
+from faasmctl.util.config import get_faasm_ini_value, update_faasm_ini_value
 from faasmctl.util.deploy import generate_ini_file
 from faasmctl.util.docker import get_docker_tag
 from faasmctl.util.faasm import FAASM_DOCKER_REGISTRY
@@ -368,3 +368,32 @@ def get_container_ips_from_compose(faasm_checkout, cluster_name):
         )
         container_ips.append(c_ip)
     return container_ips
+
+
+def restart_ctr_by_name(ini_file, ctr_names):
+    all_ctr_names = get_faasm_ini_value(ini_file, "Faasm", "worker_names").split(",")
+
+    if not all([ctr_name in all_ctr_names for ctr_name in ctr_names]):
+        print(
+            "Requested to restart a ctr list "
+            "({}) not a subset of the worker list: {}".format(ctr_names, all_ctr_names)
+        )
+        raise RuntimeError("Unrecognised container name!")
+
+    docker_cmd = "docker restart {}".format(" ".join(ctr_names))
+    out = run(docker_cmd, shell=True, capture_output=True)
+    assert out.returncode == 0, "Error restarting docker container: {}".format(
+        out.stderr
+    )
+
+    # Update the container names and ips
+    faasm_checkout = get_faasm_ini_value(ini_file, "Faasm", "working_dir")
+    cluster_name = get_faasm_ini_value(ini_file, "Faasm", "cluster_name")
+
+    # Ge the names and the ips directly from docker as the ones in the INI
+    # file are now stale after the restart
+    new_ctr_names = get_container_names_from_compose(faasm_checkout, cluster_name)
+    new_ctr_ips = get_container_ips_from_compose(faasm_checkout, cluster_name)
+
+    update_faasm_ini_value(ini_file, "Faasm", "worker_names", ",".join(new_ctr_names))
+    update_faasm_ini_value(ini_file, "Faasm", "worker_ips", ",".join(new_ctr_ips))
