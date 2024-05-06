@@ -42,8 +42,6 @@ def get_k8s_logs(s, follow, ini_file, last_restart):
 
     k8s_cmd = [
         "logs",
-        # TODO: there seems to be a divergence between our time and AKSs
-        # "--since-time={}".format(last_restart),
         "-f" if follow else "",
         service_to_k8s_str[service],
         "--tail=-1",

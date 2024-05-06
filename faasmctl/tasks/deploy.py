@@ -59,16 +59,16 @@ def dist_tests(ctx, mount_source=None, ini_file=None):
     - mount_source (str): path to the Faasm's source code checkout
     - ini_file (str): optional path to a running cluster
     """
-    if not mount_source:
-        raise RuntimeError(
-            "When deploying a dist-tests cluster, you need to"
-            " specify the --mount-source"
-        )
-
     # If the user provided a path to the ini_file, it means that we are
     # deploying the dist-tests on top of an existing cluster. Otherwise start
     # a new compose clustter
     if ini_file is None:
+        if not mount_source:
+            raise RuntimeError(
+                "When deploying a dist-tests cluster, you need to"
+                " specify the --mount-source"
+            )
+
         ini_file = compose(ctx, workers=0, mount_source=mount_source, clean=False)
 
     # Second, start the dist-test-server

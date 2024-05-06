@@ -8,7 +8,7 @@ from faasmctl.util.config import (
     BACKEND_INI_STRING,
     get_faasm_ini_file,
     get_faasm_ini_value,
-    update_faasm_ini_vaule,
+    update_faasm_ini_value,
 )
 from invoke import task
 
@@ -43,5 +43,5 @@ def scale(ctx, service, replicas, ini_file=None):
     worker_ips = "{}".format(
         ",".join(get_container_ips_from_compose(faasm_checkout, cluster_name))
     )
-    update_faasm_ini_vaule(ini_file, "Faasm", "worker_names", worker_names)
-    update_faasm_ini_vaule(ini_file, "Faasm", "worker_ips", worker_ips)
+    update_faasm_ini_value(ini_file, "Faasm", "worker_names", worker_names)
+    update_faasm_ini_value(ini_file, "Faasm", "worker_ips", worker_ips)

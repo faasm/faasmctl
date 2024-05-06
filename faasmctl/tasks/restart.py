@@ -4,10 +4,22 @@ from faasmctl.util.config import (
     BACKEND_INI_STRING,
     get_faasm_ini_file,
     get_faasm_ini_value,
-    update_faasm_ini_vaule,
+    update_faasm_ini_value,
 )
+from faasmctl.util.restart import replica as do_restart_replica
 from faasmctl.util.time import get_time_rfc3339
 from invoke import task
+
+
+@task
+def replica(ctx, name, ini_file=None):
+    """
+    Restart an individual replica by name
+
+    The meaning of name here will depend on wether we are using a compose
+    or a k8s backend.
+    """
+    do_restart_replica(name)
 
 
 @task(default=True, iterable=["s"])
@@ -16,7 +28,7 @@ def restart(ctx, s, ini_file=None):
     Restart a running service in the cluster
 
     Parameters:
-    - s (str, repeateble): service to get the logs from
+    - s (str, repeateble): service to restart
     - ini_file (str): path to the cluster's INI file
     """
     if not ini_file:
@@ -30,5 +42,5 @@ def restart(ctx, s, ini_file=None):
         )
 
     # Update the last restart value
-    update_faasm_ini_vaule(ini_file, "Faasm", "last_restart", get_time_rfc3339())
+    update_faasm_ini_value(ini_file, "Faasm", "last_restart", get_time_rfc3339())
     run_compose_cmd(ini_file, "restart {}".format(" ".join(s)))

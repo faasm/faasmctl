@@ -24,7 +24,7 @@ def get_faasm_ini_value(ini_file, section, key):
     return config[section].get(key, "")
 
 
-def update_faasm_ini_vaule(ini_file, section, key, new_value):
+def update_faasm_ini_value(ini_file, section, key, new_value):
     if not exists(ini_file):
         raise RuntimeError("Did not find faasm config at: {}".format(ini_file))
 

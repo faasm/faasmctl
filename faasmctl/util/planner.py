@@ -3,6 +3,7 @@ from faasmctl.util.gen_proto.planner_pb2 import (
     AvailableHostsResponse,
     GetInFlightAppsResponse,
     HttpMessage,
+    SetEvictedVmIpsRequest,
 )
 from google.protobuf.json_format import MessageToJson, Parse
 from requests import post
@@ -39,6 +40,10 @@ def prepare_planner_msg(msg_type, msg_body=None):
         http_message.type = HttpMessage.Type.EXECUTE_BATCH_STATUS
     elif msg_type == "PRELOAD_SCHEDULING_DECISION":
         http_message.type = HttpMessage.Type.PRELOAD_SCHEDULING_DECISION
+    elif msg_type == "SET_NEXT_EVICTED_VM":
+        http_message.type = HttpMessage.Type.SET_NEXT_EVICTED_VM
+    elif msg_type == "SET_POLICY":
+        http_message.type = HttpMessage.Type.SET_POLICY
     else:
         raise RuntimeError("Unrecognised HTTP msg type: {}".format(msg_type))
 
@@ -157,3 +162,40 @@ def get_in_fligh_apps():
     in_flight_apps = Parse(response.text, GetInFlightAppsResponse())
 
     return in_flight_apps
+
+
+def set_next_evicted_host(host_ips):
+    host, port = get_faasm_planner_host_port(get_faasm_ini_file())
+    url = "http://{}:{}".format(host, port)
+
+    evicted_vm_ips = SetEvictedVmIpsRequest()
+    evicted_vm_ips.vmIps.extend(host_ips)
+
+    planner_msg = prepare_planner_msg(
+        "SET_NEXT_EVICTED_VM", MessageToJson(evicted_vm_ips, indent=None)
+    )
+    response = post(url, data=planner_msg, timeout=None)
+
+    if response.status_code != 200:
+        print(
+            "Error setting next evicted host 'ips: {}' (code: {}): {}".format(
+                host_ips, response.status_code, response.text
+            )
+        )
+        raise RuntimeError("Error setting next evicted host")
+
+
+def set_planner_policy(policy):
+    host, port = get_faasm_planner_host_port(get_faasm_ini_file())
+    url = "http://{}:{}".format(host, port)
+    planner_msg = prepare_planner_msg("SET_POLICY", policy)
+
+    response = post(url, data=planner_msg, timeout=None)
+
+    if response.status_code != 200:
+        print(
+            "Error setting planner policy '{}' (code: {}): {}".format(
+                policy, response.status_code, response.text
+            )
+        )
+        raise RuntimeError("Error setting planner policy")

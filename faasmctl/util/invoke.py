@@ -101,8 +101,22 @@ def invoke_and_await(url, json_msg, expected_num_messages):
     """
     poll_period = 2
 
-    # The first invocation returns an appid to poll for the message
-    response = post(url, data=json_msg, timeout=None)
+    # The first invocation returns an appid to poll for the message. If there
+    # are not enough slots, this will POST will fail. In general, we want to
+    # tolerate this a number of times (for example, to accomodate for dynamic
+    # cluster sizes)
+
+    num_retries = 10
+    sleep_period_secs = 0.5
+
+    for i in range(num_retries):
+        response = post(url, data=json_msg, timeout=None)
+        if response.status_code == 500 and response.text == "No available hosts":
+            print("No available hosts, retrying... {}/{}".format(i + 1, num_retries))
+            sleep(sleep_period_secs)
+            continue
+        break
+
     if response.status_code != 200:
         print(
             "POST request failed (code: {}): {}".format(
