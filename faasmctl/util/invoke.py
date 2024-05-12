@@ -19,6 +19,7 @@ def invoke_wasm(
     dict_out=False,
     ini_file=None,
     host_list=None,
+    num_retries=30,
 ):
     """
     Main entrypoint to invoke an arbitrary message in a Faasm cluster
@@ -86,7 +87,7 @@ def invoke_wasm(
             )
             raise RuntimeError("Error preloading scheduling decision!")
 
-    result = invoke_and_await(url, msg, expected_num_messages)
+    result = invoke_and_await(url, msg, expected_num_messages, num_retries)
 
     if dict_out:
         return MessageToDict(result)
@@ -94,7 +95,7 @@ def invoke_wasm(
     return result
 
 
-def invoke_and_await(url, json_msg, expected_num_messages):
+def invoke_and_await(url, json_msg, expected_num_messages, num_retries):
     """
     Invoke the given JSON message to the given URL and poll the planner to
     wait for the response
@@ -106,10 +107,11 @@ def invoke_and_await(url, json_msg, expected_num_messages):
     # tolerate this a number of times (for example, to accomodate for dynamic
     # cluster sizes)
 
-    num_retries = 10
-    sleep_period_secs = 0.5
+    sleep_period_secs = 1.5
 
-    for i in range(num_retries):
+    i = 0
+    while i < num_retries:
+        i += 1
         response = post(url, data=json_msg, timeout=None)
         if response.status_code == 500 and response.text == "No available hosts":
             print("No available hosts, retrying... {}/{}".format(i + 1, num_retries))
