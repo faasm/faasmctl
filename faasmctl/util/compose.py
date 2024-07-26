@@ -11,6 +11,7 @@ from shutil import rmtree
 from subprocess import run
 from time import sleep
 
+DEFAULT_FAASM_CAPTURE_STDOUT = "on"
 DEFAULT_FAASM_OVERRIDE_CPU_COUNT = "8"
 
 
@@ -113,6 +114,10 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     env["FAASM_OVERRIDE_CPU_COUNT"] = DEFAULT_FAASM_OVERRIDE_CPU_COUNT
     if "FAASM_OVERRIDE_CPU_COUNT" in environ:
         env["FAASM_OVERRIDE_CPU_COUNT"] = environ["FAASM_OVERRIDE_CPU_COUNT"]
+
+    env["FAASM_CAPTURE_STDOUT"] = DEFAULT_FAASM_CAPTURE_STDOUT
+    if "FAASM_CAPTURE_STDOUT" in environ:
+        env["FAASM_CAPTURE_STDOUT"] = environ["FAASM_CAPTURE_STDOUT"]
 
     if "FAASM_CLI_IMAGE" in environ:
         env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]

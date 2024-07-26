@@ -4,6 +4,7 @@ from faasmctl.util.config import (
 )
 from faasmctl.util.docker import in_docker
 from requests import put
+from subprocess import run
 
 
 def upload_wasm(user, func, wasm_file, ini_file=None):
@@ -13,11 +14,38 @@ def upload_wasm(user, func, wasm_file, ini_file=None):
     if not ini_file:
         ini_file = get_faasm_ini_file()
 
+    # Work out if WASM file is a host path, or a path in a container
+    wasm_in_ctr = wasm_file.rfind(":") != -1
+    if wasm_in_ctr:
+        tmp_ctr_name = "wasm-ctr"
+
+        def stop_ctr():
+            run(f"docker rm -f {tmp_ctr_name}", shell=True, capture_output=True)
+
+        ctr_image = wasm_file[: wasm_file.rfind(":")]
+        in_ctr_path = wasm_file[wasm_file.rfind(":") + 1 :]
+        docker_cmd = "docker run -d --name {} {} bash".format(tmp_ctr_name, ctr_image)
+        run(docker_cmd, shell=True, capture_output=True)
+
+        tmp_wasm_file = "/tmp/wasm-ctr-func.wasm"
+        docker_cmd = "docker cp {}:{} {}".format(
+            tmp_ctr_name, in_ctr_path, tmp_wasm_file
+        )
+        try:
+            run(docker_cmd, shell=True, capture_output=True)
+        except Exception as e:
+            print("Caught exception copying: {}".format(e))
+
+        stop_ctr()
+
+        wasm_file = tmp_wasm_file
+
     host, port = get_faasm_upload_host_port(ini_file, in_docker())
     url = "http://{}:{}/f/{}/{}".format(host, port, user, func)
 
     response = put(url, data=open(wasm_file, "rb"))
-    print("Response ({}): {}".format(response.status_code, response.text))
+    if response.status_code != 200:
+        raise RuntimeError(f"Error uploading WASM: {response.text}")
 
 
 def upload_python(func, python_file, ini_file=None):
