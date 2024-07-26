@@ -9,6 +9,7 @@ from . import invoke
 from . import logs
 from . import monitor
 from . import restart
+from . import s3
 from . import scale
 from . import status
 from . import upload
@@ -23,6 +24,7 @@ task_ns = Collection(
     logs,
     monitor,
     restart,
+    s3,
     scale,
     status,
     upload,
