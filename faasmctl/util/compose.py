@@ -91,6 +91,8 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     if "FAASM_DEPLOYMENT_TYPE" in environ:
         env["FAASM_DEPLOYMENT_TYPE"] = environ["FAASM_DEPLOYMENT_TYPE"]
 
+    # Work-out the WASM VM and the cli image based on the available env.
+    # variables (and possible overwrites)
     if "FAASM_WASM_VM" in environ:
         wasm_vm = environ["FAASM_WASM_VM"]
         if wasm_vm == "sgx-sim":
@@ -111,6 +113,12 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         else:
             env["FAASM_WASM_VM"] = wasm_vm
 
+    if "FAASM_CLI_IMAGE" in environ and "sgx" not in wasm_vm:
+        env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
+
+    if "FAASM_SGX_CLI_IMAGE" in environ and "sgx" in wasm_vm:
+        env["FAASM_CLI_IMAGE"] = environ["FAASM_SGX_CLI_IMAGE"]
+
     env["FAASM_OVERRIDE_CPU_COUNT"] = DEFAULT_FAASM_OVERRIDE_CPU_COUNT
     if "FAASM_OVERRIDE_CPU_COUNT" in environ:
         env["FAASM_OVERRIDE_CPU_COUNT"] = environ["FAASM_OVERRIDE_CPU_COUNT"]
@@ -118,9 +126,6 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     env["FAASM_CAPTURE_STDOUT"] = DEFAULT_FAASM_CAPTURE_STDOUT
     if "FAASM_CAPTURE_STDOUT" in environ:
         env["FAASM_CAPTURE_STDOUT"] = environ["FAASM_CAPTURE_STDOUT"]
-
-    if "FAASM_CLI_IMAGE" in environ:
-        env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
 
     if "CONAN_CACHE_MOUNT_SOURCE" in environ:
         env["CONAN_CACHE_MOUNT_SOURCE"] = environ["CONAN_CACHE_MOUNT_SOURCE"]
