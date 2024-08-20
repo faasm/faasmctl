@@ -113,11 +113,30 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         else:
             env["FAASM_WASM_VM"] = wasm_vm
 
-    if "FAASM_CLI_IMAGE" in environ and "sgx" not in wasm_vm:
-        env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
+        # Work out the CLI image
+        if "FAASM_CLI_IMAGE" in environ and "sgx" not in wasm_vm:
+            env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
 
-    if "FAASM_SGX_CLI_IMAGE" in environ and "sgx" in wasm_vm:
-        env["FAASM_CLI_IMAGE"] = environ["FAASM_SGX_CLI_IMAGE"]
+        if "FAASM_SGX_CLI_IMAGE" in environ and "sgx" in wasm_vm:
+            env["FAASM_CLI_IMAGE"] = environ["FAASM_SGX_CLI_IMAGE"]
+
+    # In a compose cluster with SGX in HW mode, we need to manually set-up
+    # the AESMD volume and socket for remote attestation (in a k8s deployment
+    # on AKS, this is done automatically for us)
+    if env["FAASM_WASM_VM"] == "sgx":
+        docker_cmd = [
+            "docker",
+            "volume create",
+            "--driver local",
+            "--opt type=tmpfs",
+            "--opt device=tmpfs",
+            "--opt o=rw",
+            "aesmd-socket",
+        ]
+        docker_cmd = " ".join(docker_cmd)
+        run(docker_cmd, shell=True, check=True)
+
+        env["SGX_DEVICE_MOUNT_DIR"] = "/dev/sgx"
 
     env["FAASM_OVERRIDE_CPU_COUNT"] = DEFAULT_FAASM_OVERRIDE_CPU_COUNT
     if "FAASM_OVERRIDE_CPU_COUNT" in environ:
@@ -155,6 +174,9 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
     cmd = [
         "docker compose up -d",
         "--scale worker={}".format(workers) if int(workers) > 0 else "",
+        # In a compose cluster with SGX in HW mode, we need to start the aesmd
+        # service
+        "aesmd" if env["FAASM_WASM_VM"] == "sgx" else "",
         "worker" if int(workers) > 0 else "faasm-cli",
     ]
     cmd = " ".join(cmd)
@@ -271,6 +293,7 @@ def wait_for_venv(ini_file, cli):
             sleep(3)
 
 
+# TODO: make this method callable for when things go sideways
 def populate_host_sysroot(faasm_checkout, clean=False):
     """
     Populate the host's sysroot under `./dev/faasm-local` to be shared by
