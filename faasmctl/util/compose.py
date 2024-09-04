@@ -155,7 +155,12 @@ def deploy_compose_cluster(faasm_checkout, workers, mount_source, ini_file):
     # In a compose cluster with SGX in HW mode, we need to manually set-up
     # the AESMD volume and socket for remote attestation (in a k8s deployment
     # on AKS, this is done automatically for us)
-    must_start_sgx_aesmd = "FAASM_WASM_VM" in env and env["FAASM_WASM_VM"] == "sgx"
+    is_sgx_deployment = "FAASM_WASM_VM" in env and env["FAASM_WASM_VM"] == "sgx"
+    is_hw_mode = (
+        "FAASM_WORKER_IMAGE" in env
+        and "worker-sgx-sim" not in env["FAASM_WORKER_IMAGE"]
+    )
+    must_start_sgx_aesmd = is_sgx_deployment and is_hw_mode
 
     if must_start_sgx_aesmd:
         docker_cmd = [
