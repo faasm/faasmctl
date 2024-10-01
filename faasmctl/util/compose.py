@@ -11,7 +11,7 @@ from shutil import rmtree
 from subprocess import run
 from time import sleep
 
-DEFAULT_FAASM_CAPTURE_STDOUT = "on"
+DEFAULT_FAASM_CAPTURE_STDOUT = "off"
 DEFAULT_FAASM_OVERRIDE_CPU_COUNT = "8"
 
 

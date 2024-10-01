@@ -1,4 +1,9 @@
-from invoke import task
+from faasmctl.util.backend import COMPOSE_BACKEND, K8S_BACKEND
+from faasmctl.util.config import (
+    BACKEND_INI_STRING,
+    get_faasm_ini_file,
+    get_faasm_ini_value,
+)
 from faasmctl.util.s3 import (
     list_buckets as do_list_buckets,
     clear_bucket as do_clear_bucket,
@@ -7,6 +12,7 @@ from faasmctl.util.s3 import (
     upload_dir as do_upload_dir,
     dump_object as do_dump_object,
 )
+from invoke import task
 
 
 @task
@@ -23,6 +29,22 @@ def clear_bucket(ctx, bucket):
     Clear (i.e. remove) bucket
     """
     do_clear_bucket(bucket)
+
+
+@task
+def get_url(ctx):
+    """
+    Get the URL for the S3 server
+    """
+    ini_file = get_faasm_ini_file()
+
+    backend = get_faasm_ini_value(ini_file, "Faasm", BACKEND_INI_STRING)
+    if backend == COMPOSE_BACKEND:
+        print("127.0.0.1")
+    elif backend == K8S_BACKEND:
+        raise RuntimeError("Unimplemented for backend: {}".format(backend))
+    else:
+        raise RuntimeError("Unrecognised backend: {}".format(backend))
 
 
 @task

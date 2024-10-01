@@ -21,6 +21,7 @@ def invoke(
     mpi_world_size=None,
     single_host=False,
     host_dist=None,
+    output_format=None,
 ):
     """
     Invoke the execution of a user/func pair
@@ -86,6 +87,19 @@ def invoke(
     exec_time = "{:.2f} s".format(
         get_execution_time_from_message_results(result, unit="s")
     )
+
+    if output_format is not None:
+        if output_format == "exec-time":
+            print(exec_time[:-2])
+            return 0
+
+        if output_format == "wall-time":
+            print(wall_time[-2])
+            return 0
+
+        if output_format == "start-end-ts":
+            print(f"{start_ts},{end_ts}")
+            return 0
 
     print("======================= Faasm Execution =========================")
     print("Function: \t\t\t{}/{}".format(user, function))
