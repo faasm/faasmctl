@@ -34,7 +34,7 @@ def workflow(ctx, wflow, path, ini_file=None):
     if wasm_in_ctr:
         ctr_image = path[: path.rfind(":")]
         in_ctr_path = path[path.rfind(":") + 1 :]
-        docker_cmd = "docker run --rm -it {} ls --format=commas {}".format(
+        docker_cmd = "docker run --rm {} ls --format=commas {}".format(
             ctr_image, in_ctr_path
         )
         funcs = (
