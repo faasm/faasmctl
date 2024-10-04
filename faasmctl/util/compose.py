@@ -119,6 +119,10 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
 
         if "FAASM_SGX_CLI_IMAGE" in environ and "sgx" in wasm_vm:
             env["FAASM_CLI_IMAGE"] = environ["FAASM_SGX_CLI_IMAGE"]
+    else:
+        # Even if no WASM_VM is set, pick the provided CLI image
+        if "FAASM_CLI_IMAGE" in environ:
+            env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
 
     env["FAASM_OVERRIDE_CPU_COUNT"] = DEFAULT_FAASM_OVERRIDE_CPU_COUNT
     if "FAASM_OVERRIDE_CPU_COUNT" in environ:
