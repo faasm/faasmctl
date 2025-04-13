@@ -87,8 +87,17 @@ def invoke(
     exec_time = "{:.2f} s".format(
         get_execution_time_from_message_results(result, unit="s")
     )
+    cold_start_time = "{:.2f} ms".format(
+        get_execution_time_from_message_results(
+            result, unit="ms", ext_start_ts=(start_ts * 1e3)
+        )
+    )
 
     if output_format is not None:
+        if output_format == "cold-start":
+            print(cold_start_time[:-3])
+            return 0
+
         if output_format == "exec-time":
             print(exec_time[:-2])
             return 0
