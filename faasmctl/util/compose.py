@@ -11,6 +11,8 @@ from shutil import rmtree
 from subprocess import run
 from time import sleep
 
+DEFAULT_FAASM_ACCLESS_ENABLED = "off"
+DEFAULT_FAASM_ATTESTATION_SERVICE_URL = "https://localhost:8443"
 DEFAULT_FAASM_CAPTURE_STDOUT = "off"
 DEFAULT_FAASM_OVERRIDE_CPU_COUNT = "8"
 
@@ -123,6 +125,16 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         # Even if no WASM_VM is set, pick the provided CLI image
         if "FAASM_CLI_IMAGE" in environ:
             env["FAASM_CLI_IMAGE"] = environ["FAASM_CLI_IMAGE"]
+
+    # Tunable env. vars with curated default values
+
+    env["FAASM_ACCLESS_ENABLED"] = DEFAULT_FAASM_ACCLESS_ENABLED
+    if "FAASM_ACCLESS_ENABLED" in environ:
+        env["FAASM_ACCLESS_ENABLED"] = environ["FAASM_ACCLESS_ENABLED"]
+
+    env["FAASM_ATTESTATION_SERVICE_URL"] = DEFAULT_FAASM_ATTESTATION_SERVICE_URL
+    if "FAASM_ATTESTATION_SERVICE_URL" in environ:
+        env["FAASM_ATTESTATION_SERVICE_URL"] = environ["FAASM_ATTESTATION_SERVICE_URL"]
 
     env["FAASM_OVERRIDE_CPU_COUNT"] = DEFAULT_FAASM_OVERRIDE_CPU_COUNT
     if "FAASM_OVERRIDE_CPU_COUNT" in environ:

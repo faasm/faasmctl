@@ -1,4 +1,4 @@
-def get_execution_time_from_message_results(result, unit="s"):
+def get_execution_time_from_message_results(result, unit="s", ext_start_ts=None):
     valid_units = ["s", "ms", "us"]
     if unit not in valid_units:
         print(
@@ -13,6 +13,8 @@ def get_execution_time_from_message_results(result, unit="s"):
         start_ts = min([msg.startTimestamp for msg in result.messageResults])
     except AttributeError:
         start_ts = min([msg.timestamp for msg in result.messageResults])
+    if ext_start_ts is not None:
+        start_ts = ext_start_ts
     end_ts = max([msg.finishTimestamp for msg in result.messageResults])
 
     if unit == "s":

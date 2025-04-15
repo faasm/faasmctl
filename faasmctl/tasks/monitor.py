@@ -126,7 +126,7 @@ def print_planner_resources(policy):
 
     def color_text(color, text="X"):
         num1 = str(color)
-        return f"\033[38;5;{num1}m{text}\033[0;0m"
+        return f"\033[38;5;{num1}m{text}\033[0;0m"  # noqa: E231, E702
 
     def print_line(host_msg, worker_occupation, next_evicted_vm_ips=[]):
         is_evicted = host_msg.ip in next_evicted_vm_ips
