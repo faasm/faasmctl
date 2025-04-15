@@ -107,7 +107,7 @@ def invoke(
             return 0
 
         if output_format == "start-end-ts":
-            print(f"{start_ts},{end_ts}")
+            print(f"{start_ts},{end_ts}")  # noqa: E231
             return 0
 
     print("======================= Faasm Execution =========================")
