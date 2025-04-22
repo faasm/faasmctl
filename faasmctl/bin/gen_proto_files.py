@@ -12,7 +12,7 @@ FAASMCTL_ROOT = dirname(dirname(realpath(__file__)))
 # able to run this file in standalone mode, as if the proto files are not
 # generated, some imports in `faasmctl` will fail
 GEN_PROTO_DIR = join(FAASMCTL_ROOT, "util", "gen_proto")
-FAASM_CLI_IMAGE = "faasm.azurecr.io/cli"
+FAASM_CLI_IMAGE = "ghcr.io/faasm/cli"
 
 PROTO_FILES = [
     "faabric_pb2.py",
