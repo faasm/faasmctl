@@ -1,6 +1,6 @@
 from os import environ
 
-FAASM_VERSION = "0.27.0"
+FAASM_VERSION = "0.29.0"
 
 
 def get_version():
@@ -21,5 +21,5 @@ def get_version():
 
 
 # Define this constants after the above method to be able to use it
-FAASM_DOCKER_REGISTRY = "faasm.azurecr.io"
+FAASM_DOCKER_REGISTRY = "ghcr.io/faasm"
 FAASM_CLI_IMAGE = "{}/cli:{}".format(FAASM_DOCKER_REGISTRY, get_version())
