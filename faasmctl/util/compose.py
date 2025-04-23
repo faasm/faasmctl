@@ -14,6 +14,7 @@ from time import sleep
 DEFAULT_FAASM_ACCLESS_ENABLED = "off"
 DEFAULT_FAASM_ATTESTATION_SERVICE_URL = "https://localhost:8443"
 DEFAULT_FAASM_CAPTURE_STDOUT = "off"
+DEFAULT_FAASM_LOG_LEVEL = "debug"
 DEFAULT_FAASM_OVERRIDE_CPU_COUNT = "8"
 
 
@@ -143,6 +144,10 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
     env["FAASM_CAPTURE_STDOUT"] = DEFAULT_FAASM_CAPTURE_STDOUT
     if "FAASM_CAPTURE_STDOUT" in environ:
         env["FAASM_CAPTURE_STDOUT"] = environ["FAASM_CAPTURE_STDOUT"]
+
+    env["FAASM_LOG_LEVEL"] = DEFAULT_FAASM_LOG_LEVEL
+    if "FAASM_LOG_LEVEL" in environ:
+        env["FAASM_LOG_LEVEL"] = environ["FAASM_LOG_LEVEL"]
 
     if "CONAN_CACHE_MOUNT_SOURCE" in environ:
         env["CONAN_CACHE_MOUNT_SOURCE"] = environ["CONAN_CACHE_MOUNT_SOURCE"]
