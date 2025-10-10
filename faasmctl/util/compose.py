@@ -39,10 +39,10 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
 
     if mount_source:
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
-        env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan")
+        env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan2")
         env["FAASM_BUILD_MOUNT"] = "/build/faasm"
         env["FAASM_CODE_MOUNT"] = "/usr/local/code/faasm"
-        env["FAASM_CONAN_MOUNT"] = "/root/.conan"
+        env["FAASM_CONAN_MOUNT"] = "/root/.conan2"
         env["FAASM_LOCAL_MOUNT"] = "/usr/local/faasm"
         env["PLANNER_BUILD_MOUNT"] = env["FAASM_BUILD_MOUNT"]
     else:
@@ -50,10 +50,10 @@ def get_compose_env_vars(faasm_checkout, mount_source, ini_file=None):
         # to cleanly remove them (as ./dev is root-owned), so we can't rm -rf
         # the directory
         env["FAASM_BUILD_DIR"] = join(faasm_checkout, "dev/faasm/build")
-        env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan")
+        env["CONAN_CACHE_MOUNT_SOURCE"] = join(faasm_checkout, "dev/faasm/conan2")
         env["FAASM_BUILD_MOUNT"] = "/host_dev/build"
         env["FAASM_CODE_MOUNT"] = "/host_dev/code"
-        env["FAASM_CONAN_MOUNT"] = "/host_dev/conan"
+        env["FAASM_CONAN_MOUNT"] = "/host_dev/conan2"
         env["FAASM_LOCAL_MOUNT"] = "/host_dev/faasm-local"
         env["PLANNER_BUILD_MOUNT"] = "/build/faabric/static"
 
