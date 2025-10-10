@@ -63,7 +63,7 @@ def gen_proto_files(clean=False):
 
     # Find the right protoc binary
     docker_exec_prefix = "docker exec {}".format(tmp_ctr_name)
-    find_protoc_cmd = "{} bash -c 'find ~/.conan -name protoc'".format(
+    find_protoc_cmd = "{} bash -c 'find ~/.conan2 -name protoc'".format(
         docker_exec_prefix
     )
     protoc_bin = (
@@ -71,7 +71,7 @@ def gen_proto_files(clean=False):
         .stdout.decode("utf-8")
         .split("\n")
     )
-    p_bin = [p_bin for p_bin in protoc_bin if "build_subfolder" in p_bin]
+    p_bin = [p_bin for p_bin in protoc_bin if "bin" in p_bin]
     p_bin = p_bin[0].strip()
 
     # Generate python protobuf files
