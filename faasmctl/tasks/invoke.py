@@ -20,6 +20,7 @@ def invoke(
     input_data=None,
     mpi_world_size=None,
     single_host=False,
+    elastic=False,
     host_dist=None,
     output_format=None,
 ):
@@ -41,6 +42,8 @@ def invoke(
         msg_dict["mpi_world_size"] = int(mpi_world_size)
     if single_host:
         req_dict["singleHostHint"] = single_host
+    if elastic:
+        req_dict["elasticScaleHint"] = True
     if host_dist:
         host_dist = host_dist.split(",")
         # Prepare a host distribution
